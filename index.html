@@ -655,7 +655,8 @@
             const sessionData = {
                 timestamp: Date.now(),
                 accessGranted: true,
-                isAdmin: isAdminLoggedIn
+                isAdmin: isAdminLoggedIn,
+                masterData: currentMasterData
             };
             localStorage.setItem('dt_session', JSON.stringify(sessionData));
         }
@@ -673,6 +674,7 @@
                     // Session masih valid
                     isAccessGranted = true;
                     isAdminLoggedIn = session.isAdmin || false;
+                    currentMasterData = session.masterData || '';
                     return true;
                 } else {
                     // Session expired
@@ -693,6 +695,7 @@
             localStorage.removeItem('dt_session');
             isAccessGranted = false;
             isAdminLoggedIn = false;
+            currentMasterData = '';
         }
 
         function logoutSession() {
@@ -789,13 +792,21 @@
                 })
                 .then(data => {
                     currentMasterData = data.content || '';
+                    document.getElementById('masterData').value = currentMasterData;
                     updateDataPreview();
+                    // Save to session
+                    saveSession();
                 })
                 .catch(error => {
                     console.error('Error loading master data:', error);
-                    // Fallback to empty data
-                    currentMasterData = '';
-                    updateDataPreview();
+                    // Fallback to session data if API fails
+                    if (currentMasterData) {
+                        document.getElementById('masterData').value = currentMasterData;
+                        updateDataPreview();
+                    } else {
+                        currentMasterData = '';
+                        updateDataPreview();
+                    }
                 });
         }
 
@@ -839,7 +850,15 @@
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('saveBtn').style.display = 'inline-block';
-                initializeData();
+                
+                // Load master data into admin panel
+                if (currentMasterData) {
+                    document.getElementById('masterData').value = currentMasterData;
+                    updateDataPreview();
+                } else {
+                    initializeData();
+                }
+                
                 updateAdminStatus();
             } else {
                 alert('❌ Unlock code salah!');
@@ -895,6 +914,11 @@
                 // Update admin status if logged in as admin
                 if (isAdminLoggedIn) {
                     updateAdminStatus();
+                    // Load master data into admin panel
+                    if (currentMasterData) {
+                        document.getElementById('masterData').value = currentMasterData;
+                        updateDataPreview();
+                    }
                 }
             } else {
                 // No valid session, show password modal
@@ -942,6 +966,12 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Update current master data
+                    currentMasterData = masterDataContent;
+                    
+                    // Save to session
+                    saveSession();
+                    
                     // Save to localStorage as backup
                     const data = {
                         masterData: masterDataContent,
