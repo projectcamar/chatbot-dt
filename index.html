@@ -1406,8 +1406,8 @@
                 doc.line(170, 50, 170, 280); // Right margin
                 
                 // Process AI-cleaned content for PDF with proper formatting
-                // Use proper margins - left: 20, right: 20, so content width = 150
-                const lines = doc.splitTextToSize(aiProcessedContent, 150); // Use AI-processed content
+                // Use proper margins - left: 20, right: 20, so content width = 140
+                const lines = doc.splitTextToSize(aiProcessedContent, 140); // Reduced width to prevent overlapping
                 let yPosition = 60;
                 
                 // Set main content font
@@ -1445,12 +1445,44 @@
                         continue;
                     }
                     
-                    // Add proper margins and justify text
-                    doc.text(line, 20, yPosition, { 
-                        align: 'justify',
-                        maxWidth: 150 // Ensure text doesn't exceed right margin
-                    });
-                    yPosition += 6; // Increased line spacing for better readability
+                    // Add proper margins and justify text with better line handling
+                    if (line.length > 80) {
+                        // Split very long lines to prevent overlapping
+                        const words = line.split(' ');
+                        let currentLine = '';
+                        let lineHeight = 0;
+                        
+                        for (let word of words) {
+                            if ((currentLine + ' ' + word).length > 70) {
+                                if (currentLine) {
+                                    doc.text(currentLine, 20, yPosition + lineHeight, { 
+                                        align: 'justify',
+                                        maxWidth: 140
+                                    });
+                                    lineHeight += 6;
+                                }
+                                currentLine = word;
+                            } else {
+                                currentLine += (currentLine ? ' ' : '') + word;
+                            }
+                        }
+                        
+                        if (currentLine) {
+                            doc.text(currentLine, 20, yPosition + lineHeight, { 
+                                align: 'justify',
+                                maxWidth: 140
+                            });
+                        }
+                        
+                        yPosition += lineHeight + 6;
+                    } else {
+                        // Normal line processing
+                        doc.text(line, 20, yPosition, { 
+                            align: 'justify',
+                            maxWidth: 140 // Ensure text doesn't exceed right margin
+                        });
+                        yPosition += 6;
+                    }
                 }
                 
                 // Add AI-suggested charts
@@ -1542,14 +1574,23 @@
    - Clean up numbered lists (1. item not 1.\nitem)
    - Remove redundant information
    - Make content concise but comprehensive
+   - Convert markdown formatting: **text** becomes **text** (keep bold), ### becomes proper headers
+   - Fix line breaks and prevent text overlapping
 
 3. STRUCTURE the content logically:
    - Clear section headers
    - Proper paragraph breaks
-   - Well-formatted lists
+   - Well-formatted lists with proper indentation
    - Professional tone
+   - Each key point should be clearly separated
 
 4. PRESERVE important data and information while removing fluff.
+
+5. FORMAT for PDF:
+   - Use proper line breaks
+   - Ensure text doesn't overlap
+   - Use consistent spacing
+   - Make each key point distinct
 
 Return ONLY the cleaned and formatted content, ready for PDF generation.`;
 
@@ -1581,43 +1622,49 @@ Return ONLY the cleaned and formatted content, ready for PDF generation.`;
 
         // AI-powered data analysis for chart generation
         async function analyzeDataWithAI(content) {
-            const systemPrompt = `You are an AI data analyst specialized in determining appropriate chart types for data visualization. Your task is to:
+            const systemPrompt = `You are an AI data analyst specialized in creating charts for each key point in business reports. Your task is to:
 
-1. ANALYZE the content for numerical data patterns:
-   - Percentages (%, persen)
-   - Currency values (IDR, Rp, $, rupiah, dollar)
-   - Numerical data (juta, ribu, miliar, triliun)
-   - Ratios and comparisons
-   - Time series data
+1. ANALYZE the content and identify KEY POINTS (not overall trends):
+   - Look for numbered sections like "1. **Pertumbuhan Penjualan Total**"
+   - Each key point should get its own chart
+   - Focus on specific metrics, not general trends
 
-2. IDENTIFY data groups that can be visualized:
-   - Each data group should be separate (1 data = 1 chart)
-   - Look for 3-8 data points per chart
-   - Group similar data types together
+2. FOR EACH KEY POINT, create a separate chart:
+   - Extract the specific data points within that key point
+   - Don't combine different key points into one chart
+   - Each chart should represent ONE specific metric or category
 
-3. DETERMINE appropriate chart types:
-   - Pie Chart: for percentages and proportions (3-8 data points)
-   - Bar Chart: for comparisons and categories (3-8 data points)
-   - Line Chart: for trends and time series (3-8 data points)
+3. DETERMINE appropriate chart types per key point:
+   - Pie Chart: for percentages and proportions within one key point
+   - Bar Chart: for comparisons within one key point
+   - Line Chart: only if the key point shows time series data
 
 4. EXTRACT data in this format:
    {
      "charts": [
        {
          "type": "pie|bar|line",
-         "title": "Descriptive title",
+         "title": "Key Point Title (e.g., Pertumbuhan Penjualan Total)",
          "data": [
-           {"label": "Data label", "value": "Data value"},
-           {"label": "Data label", "value": "Data value"}
+           {"label": "Specific metric", "value": "Value"},
+           {"label": "Specific metric", "value": "Value"}
          ],
-         "reason": "Why this chart type is appropriate"
+         "reason": "Why this chart type is appropriate for this key point"
        }
      ]
    }
 
-5. GENERATE up to 8 different charts, each with 3-8 data points.
+5. EXAMPLES of what to create:
+   - Key Point 1: "Pertumbuhan Penjualan Total" → Chart with UPG, UVG, Total data
+   - Key Point 2: "Gross Margin Q1 2024" → Chart with different margin metrics
+   - Key Point 3: "Penjualan Domestik" → Chart with domestic vs export data
 
-Return ONLY the JSON response with chart suggestions.`;
+6. DO NOT create:
+   - Overall trend charts
+   - Combined charts from different key points
+   - Generic "all data" charts
+
+Return ONLY the JSON response with chart suggestions for each key point.`;
 
             try {
                 const response = await fetch('/api/chat', {
@@ -1985,9 +2032,12 @@ Return ONLY the JSON response with chart suggestions.`;
             // Clean and format the content for better PDF presentation
             let formatted = content;
             
-            // Remove markdown formatting that won't work in PDF
-            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
+            // Convert markdown formatting to PDF-friendly format
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '$1'); // Keep bold text but remove markdown
             formatted = formatted.replace(/\*(.*?)\*/g, '$1'); // Remove italic
+            formatted = formatted.replace(/###\s*(.*)/g, '$1'); // Convert ### headers to plain text
+            formatted = formatted.replace(/##\s*(.*)/g, '$1'); // Convert ## headers to plain text
+            formatted = formatted.replace(/#\s*(.*)/g, '$1'); // Convert # headers to plain text
             
             // Handle markdown tables properly with clean formatting
             const tableRegex = /(\|.*\|(?:\s*\n\|.*\|)*)/g;
