@@ -9,7 +9,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: process.env.CORS_ORIGIN || "https://chatbot-dt.netlify.app",
     methods: ["GET", "POST"],
     credentials: true
 };
@@ -186,7 +186,15 @@ Jawablah dengan bahasa Indonesia yang ramah dan profesional. Fokus pada aspek su
 
 // Health check
 app.get('/.netlify/functions/server/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        environment: {
+            OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+            ADMIN_UNLOCK_CODE: !!process.env.ADMIN_UNLOCK_CODE,
+            CORS_ORIGIN: process.env.CORS_ORIGIN || 'default'
+        }
+    });
 });
 
 module.exports.handler = serverless(app);
