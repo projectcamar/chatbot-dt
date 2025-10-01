@@ -2,8 +2,7 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
+const { getMasterData, setMasterData } = require('./shared-storage');
 
 const app = express();
 
@@ -18,47 +17,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// File path untuk persistent storage
-const DATA_FILE = path.join(__dirname, 'master-data.json');
-
-// Load master data from file
+// Load master data from shared storage
 function loadMasterData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading master data:', error);
-    }
-    return {
-        content: '',
-        lastUpdated: null,
-        updatedBy: ''
-    };
+    return getMasterData();
 }
 
-// Save master data to file
+// Save master data to shared storage
 function saveMasterData(data) {
     try {
-        // Ensure directory exists
-        const dir = path.dirname(DATA_FILE);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        console.log('Master data saved successfully to:', DATA_FILE);
+        setMasterData(data);
+        console.log('Master data saved to shared storage:', data);
         return true;
     } catch (error) {
         console.error('Error saving master data:', error);
-        console.error('DATA_FILE path:', DATA_FILE);
         return false;
     }
 }
-
-// Load initial data
-let masterData = loadMasterData();
 
 // Routes
 app.get('/api/master-data', (req, res) => {

@@ -2,8 +2,7 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
+const { getMasterData } = require('./shared-storage');
 
 const app = express();
 
@@ -18,24 +17,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// File path untuk master data
-const DATA_FILE = path.join(__dirname, '..', 'master-data', 'master-data.json');
-
-// Load master data from file
+// Load master data from shared storage
 function loadMasterData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading master data:', error);
-    }
-    return {
-        content: '',
-        lastUpdated: null,
-        updatedBy: ''
-    };
+    return getMasterData();
 }
 
 // Chat with AI endpoint
