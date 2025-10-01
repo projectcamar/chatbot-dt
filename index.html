@@ -1571,11 +1571,14 @@
 2. CLEAN and FORMAT the content for professional PDF:
    - Fix broken sentences and paragraphs
    - Ensure proper spacing between sections
-   - Clean up numbered lists (1. item not 1.\nitem)
+   - PRESERVE numbered lists structure (1. 2. 3. etc.) - DO NOT change numbering
    - Remove redundant information
    - Make content concise but comprehensive
-   - Convert markdown formatting: **text** becomes **text** (keep bold), ### becomes proper headers
+   - REMOVE ONLY markdown symbols: **text** becomes text (remove **), ### becomes plain text
    - Fix line breaks and prevent text overlapping
+   - Convert **bold** text to plain text
+   - Remove all ### ## # headers and make them plain text
+   - KEEP the original numbering sequence intact
 
 3. STRUCTURE the content logically:
    - Clear section headers
@@ -1639,17 +1642,38 @@ Return ONLY the cleaned and formatted content, ready for PDF generation.`;
    - Bar Chart: for comparisons within one key point
    - Line Chart: only if the key point shows time series data
 
-4. EXTRACT data in this format:
+4. EXTRACT data in this EXACT format (follow this structure precisely):
    {
      "charts": [
        {
-         "type": "pie|bar|line",
-         "title": "Key Point Title (e.g., Pertumbuhan Penjualan Total)",
+         "type": "pie",
+         "title": "Pertumbuhan Penjualan Total (termasuk Ekspor)",
          "data": [
-           {"label": "Specific metric", "value": "Value"},
-           {"label": "Specific metric", "value": "Value"}
+           {"label": "UPG", "value": "-4.9%"},
+           {"label": "UVG", "value": "+0.2%"},
+           {"label": "Total", "value": "-4.7%"}
          ],
-         "reason": "Why this chart type is appropriate for this key point"
+         "reason": "Data persentase cocok untuk pie chart"
+       },
+       {
+         "type": "bar",
+         "title": "Gross Margin Q1 2024",
+         "data": [
+           {"label": "Persentase", "value": "49.9%"},
+           {"label": "Kenaikan vs LY", "value": "61 bps"},
+           {"label": "Kenaikan vs L3M", "value": "156 bps"}
+         ],
+         "reason": "Data margin cocok untuk bar chart"
+       },
+       {
+         "type": "bar",
+         "title": "Pertumbuhan Penjualan Domestik",
+         "data": [
+           {"label": "Penjualan Domestik", "value": "-5.0%"},
+           {"label": "Penjualan Ekspor", "value": "-14.0%"},
+           {"label": "Dampak GM", "value": "0.0%"}
+         ],
+         "reason": "Data penjualan cocok untuk bar chart"
        }
      ]
    }
@@ -1659,10 +1683,19 @@ Return ONLY the cleaned and formatted content, ready for PDF generation.`;
    - Key Point 2: "Gross Margin Q1 2024" → Chart with different margin metrics
    - Key Point 3: "Penjualan Domestik" → Chart with domestic vs export data
 
-6. DO NOT create:
+6. STRICT RULES - DO NOT create:
    - Overall trend charts
    - Combined charts from different key points
    - Generic "all data" charts
+   - "Trend Keseluruhan Data" charts
+   - Any chart that combines multiple key points
+   - Line charts unless the key point specifically shows time series data
+
+7. FOCUS on individual key points only:
+   - Each chart must represent ONE specific key point
+   - Extract data ONLY from within that key point
+   - Create separate charts for each key point
+   - Make charts insightful and specific to that key point
 
 Return ONLY the JSON response with chart suggestions for each key point.`;
 
@@ -1685,157 +1718,20 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                         const chartData = JSON.parse(data.response);
                         return chartData.charts || [];
                     } catch (parseError) {
-                        console.warn('Failed to parse AI chart response, using fallback');
-                        return analyzeDataForCharts(content); // Fallback to original function
+                        console.warn('Failed to parse AI chart response, no charts will be generated');
+                        return []; // No fallback, let AI handle everything
                     }
                 } else {
-                    console.warn('AI chart analysis failed, using fallback');
-                    return analyzeDataForCharts(content); // Fallback to original function
+                    console.warn('AI chart analysis failed, no charts will be generated');
+                    return []; // No fallback, let AI handle everything
                 }
             } catch (error) {
                 console.error('Error in AI chart analysis:', error);
-                return analyzeDataForCharts(content); // Fallback to original function
+                return []; // No fallback, let AI handle everything
             }
         }
 
-        // AI function to detect data types and determine appropriate chart types (fallback)
-        function analyzeDataForCharts(content) {
-            const chartSuggestions = [];
-            
-            // Look for numerical data patterns
-            const numberPatterns = [
-                // Percentage patterns
-                /(\d+\.?\d*%)/g,
-                // Currency patterns
-                /(IDR\s*[\d.,]+|Rp\s*[\d.,]+|\$\s*[\d.,]+)/g,
-                // Number patterns
-                /(\d+\.?\d*)\s*(juta|ribu|miliar|triliun)/g,
-                // Simple numbers
-                /(\d+\.?\d*)/g
-            ];
-            
-            // Look for categorical data patterns
-            const categoryPatterns = [
-                // List items with numbers
-                /(\d+\.\s*[^:]+:\s*[\d.,%]+)/g,
-                // Table-like data
-                /\|([^|]+)\|([^|]+)\|/g
-            ];
-            
-            // Extract potential data points
-            const dataPoints = [];
-            
-            // Extract from tables
-            const tableMatches = content.match(/\|([^|]+)\|([^|]+)\|/g);
-            if (tableMatches) {
-                tableMatches.forEach(match => {
-                    const cells = match.split('|').slice(1, -1).map(cell => cell.trim());
-                    if (cells.length >= 2) {
-                        dataPoints.push({
-                            label: cells[0],
-                            value: cells[1],
-                            type: 'table'
-                        });
-                    }
-                });
-            }
-            
-            // Extract from numbered lists
-            const listMatches = content.match(/(\d+\.\s*[^:]+:\s*[^.\n]+)/g);
-            if (listMatches) {
-                listMatches.forEach(match => {
-                    const parts = match.split(':');
-                    if (parts.length >= 2) {
-                        dataPoints.push({
-                            label: parts[0].replace(/^\d+\.\s*/, '').trim(),
-                            value: parts[1].trim(),
-                            type: 'list'
-                        });
-                    }
-                });
-            }
-            
-            // Analyze data and suggest chart types - generate up to 8 different charts
-            if (dataPoints.length >= 3) {
-                const hasPercentages = dataPoints.some(dp => dp.value.includes('%'));
-                const hasCurrency = dataPoints.some(dp => dp.value.match(/IDR|Rp|\$/));
-                const hasNumbers = dataPoints.some(dp => dp.value.match(/\d+/));
-                
-                // Group data by type for better chart generation
-                const percentageData = dataPoints.filter(dp => dp.value.includes('%'));
-                const currencyData = dataPoints.filter(dp => dp.value.match(/IDR|Rp|\$/));
-                const numberData = dataPoints.filter(dp => dp.value.match(/\d+/) && !dp.value.includes('%') && !dp.value.match(/IDR|Rp|\$/));
-                
-                // Generate multiple charts based on data types
-                let chartCount = 0;
-                const maxCharts = 8;
-                
-                // Chart 1: Percentage Pie Chart (if available)
-                if (percentageData.length >= 3 && chartCount < maxCharts) {
-                    chartSuggestions.push({
-                        type: 'pie',
-                        title: 'Distribusi Data Persentase',
-                        data: percentageData.slice(0, 8), // Max 8 data points for pie
-                        reason: 'Data persentase cocok untuk pie chart'
-                    });
-                    chartCount++;
-                }
-                
-                // Chart 2: Currency Bar Chart (if available)
-                if (currencyData.length >= 3 && chartCount < maxCharts) {
-                    chartSuggestions.push({
-                        type: 'bar',
-                        title: 'Data Keuangan (Mata Uang)',
-                        data: currencyData.slice(0, 8),
-                        reason: 'Data mata uang cocok untuk bar chart'
-                    });
-                    chartCount++;
-                }
-                
-                // Chart 3: Number Bar Chart (if available)
-                if (numberData.length >= 3 && chartCount < maxCharts) {
-                    chartSuggestions.push({
-                        type: 'bar',
-                        title: 'Perbandingan Data Numerik',
-                        data: numberData.slice(0, 8),
-                        reason: 'Data numerik cocok untuk bar chart'
-                    });
-                    chartCount++;
-                }
-                
-                // Chart 4: All Data Line Chart (if enough data)
-                if (dataPoints.length >= 4 && chartCount < maxCharts) {
-                    chartSuggestions.push({
-                        type: 'line',
-                        title: 'Trend Keseluruhan Data',
-                        data: dataPoints.slice(0, 8),
-                        reason: 'Semua data untuk melihat trend'
-                    });
-                    chartCount++;
-                }
-                
-                // Chart 5-8: Additional specialized charts based on data patterns
-                if (chartCount < maxCharts && dataPoints.length >= 6) {
-                    // Split data into chunks for different perspectives
-                    const chunkSize = Math.ceil(dataPoints.length / (maxCharts - chartCount));
-                    
-                    for (let i = 0; i < maxCharts - chartCount && i * chunkSize < dataPoints.length; i++) {
-                        const chunk = dataPoints.slice(i * chunkSize, (i + 1) * chunkSize);
-                        if (chunk.length >= 3) {
-                            chartSuggestions.push({
-                                type: i % 2 === 0 ? 'bar' : 'line',
-                                title: `Analisis Data Bagian ${i + 1}`,
-                                data: chunk,
-                                reason: `Data bagian ${i + 1} untuk analisis detail`
-                            });
-                            chartCount++;
-                        }
-                    }
-                }
-            }
-            
-            return chartSuggestions;
-        }
+        // Note: Hardcode fallback removed - AI handles all chart decisions
 
         // Generate chart based on data analysis
         function generateChart(chartSuggestion) {
@@ -2032,12 +1928,17 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             // Clean and format the content for better PDF presentation
             let formatted = content;
             
-            // Convert markdown formatting to PDF-friendly format
-            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '$1'); // Keep bold text but remove markdown
-            formatted = formatted.replace(/\*(.*?)\*/g, '$1'); // Remove italic
-            formatted = formatted.replace(/###\s*(.*)/g, '$1'); // Convert ### headers to plain text
-            formatted = formatted.replace(/##\s*(.*)/g, '$1'); // Convert ## headers to plain text
-            formatted = formatted.replace(/#\s*(.*)/g, '$1'); // Convert # headers to plain text
+            // Remove ALL markdown formatting aggressively
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove **bold** markdown
+            formatted = formatted.replace(/\*(.*?)\*/g, '$1'); // Remove *italic* markdown
+            formatted = formatted.replace(/###\s*(.*)/g, '$1'); // Remove ### headers
+            formatted = formatted.replace(/##\s*(.*)/g, '$1'); // Remove ## headers
+            formatted = formatted.replace(/#\s*(.*)/g, '$1'); // Remove # headers
+            formatted = formatted.replace(/`(.*?)`/g, '$1'); // Remove `code` markdown
+            formatted = formatted.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove [link](url) markdown
+            formatted = formatted.replace(/---+/g, ''); // Remove horizontal rules
+            formatted = formatted.replace(/\*\s+/g, ''); // Remove bullet points
+            formatted = formatted.replace(/^\s*[-*+]\s+/gm, ''); // Remove list markers
             
             // Handle markdown tables properly with clean formatting
             const tableRegex = /(\|.*\|(?:\s*\n\|.*\|)*)/g;
@@ -2089,7 +1990,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             formatted = formatted.replace(/([.!?])\s*([A-Z][a-z])/g, '$1\n\n$2'); // Paragraph breaks
             formatted = formatted.replace(/([a-z])\s+([A-Z][a-z])/g, '$1 $2'); // Fix broken words
             
-            // Better paragraph and section formatting
+            // Better paragraph and section formatting - PRESERVE numbering
             formatted = formatted.replace(/(\d+\.\s+[^\n]+)/g, '\n\n$1'); // Add spacing before numbered lists
             formatted = formatted.replace(/([.!?])\s*([A-Z])/g, '$1 $2'); // Proper sentence spacing
             formatted = formatted.replace(/([.!?])\s*([A-Z][a-z])/g, '$1\n\n$2'); // Paragraph breaks
@@ -2097,9 +1998,12 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             // Fix broken numbered lists - merge separated numbers with content
             formatted = formatted.replace(/(\d+\.)\s*\n\s*([^\n])/g, '$1 $2');
             
-            // Clean up list formatting
-            formatted = formatted.replace(/(\d+\.\s+)/g, '$1'); // Clean numbered lists
+            // Clean up list formatting - PRESERVE original numbering
+            formatted = formatted.replace(/(\d+\.\s+)/g, '$1'); // Clean numbered lists but keep numbers
             formatted = formatted.replace(/([a-zA-Z])\s*-\s*([a-zA-Z])/g, '$1 - $2'); // Clean bullet points
+            
+            // Ensure numbered lists are properly formatted
+            formatted = formatted.replace(/(\d+)\.\s*([^\n]+)/g, '$1. $2'); // Ensure proper spacing after numbers
             
             // Remove excessive line breaks
             formatted = formatted.replace(/\n{3,}/g, '\n\n'); // Max 2 line breaks
