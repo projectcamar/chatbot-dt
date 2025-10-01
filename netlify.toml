@@ -1,4 +1,7 @@
 [build]
+  # Build command (empty for static site)
+  command = ""
+  
   # Directory yang akan di-deploy (root directory)
   publish = "."
   

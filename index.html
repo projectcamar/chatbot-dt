@@ -294,27 +294,46 @@
         let socket = null;
         let currentMasterData = '';
 
-        // Initialize Socket.io connection
+        // Initialize data loading (with polling fallback)
         function initializeSocket() {
-            socket = io();
-            
-            // Listen for master data updates
-            socket.on('masterDataUpdated', (data) => {
-                currentMasterData = data.content || '';
-                updateDataPreview();
+            // Try WebSocket first (for development)
+            if (typeof io !== 'undefined') {
+                socket = io();
                 
-                // Show notification to users
-                if (!isAdminLoggedIn) {
-                    addMessageToChat('📢 Master data telah diperbarui oleh admin. AI akan menggunakan data terbaru untuk menjawab pertanyaan Anda.', 'ai');
-                }
-            });
-
+                // Listen for master data updates
+                socket.on('masterDataUpdated', (data) => {
+                    currentMasterData = data.content || '';
+                    updateDataPreview();
+                    
+                    // Show notification to users
+                    if (!isAdminLoggedIn) {
+                        addMessageToChat('📢 Master data telah diperbarui oleh admin. AI akan menggunakan data terbaru untuk menjawab pertanyaan Anda.', 'ai');
+                    }
+                });
+            }
+            
             // Load initial master data
+            loadMasterData();
+            
+            // Polling fallback for production (every 30 seconds)
+            setInterval(loadMasterData, 30000);
+        }
+        
+        // Load master data from API
+        function loadMasterData() {
             fetch('/api/master-data')
                 .then(response => response.json())
                 .then(data => {
-                    currentMasterData = data.content || '';
-                    updateDataPreview();
+                    const newData = data.content || '';
+                    if (newData !== currentMasterData) {
+                        currentMasterData = newData;
+                        updateDataPreview();
+                        
+                        // Show notification to users (only if data changed)
+                        if (!isAdminLoggedIn && newData) {
+                            addMessageToChat('📢 Master data telah diperbarui oleh admin. AI akan menggunakan data terbaru untuk menjawab pertanyaan Anda.', 'ai');
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading master data:', error);
