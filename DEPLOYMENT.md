@@ -60,7 +60,7 @@ git push -u origin main
 
 3. **Build Settings**
    - **Build command**: `npm run build`
-   - **Publish directory**: `public`
+   - **Publish directory**: `.` (root directory)
    - **Functions directory**: `netlify/functions`
 
 4. **Environment Variables**

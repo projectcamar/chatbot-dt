@@ -2,8 +2,8 @@
   # Build command untuk Netlify Functions
   command = "npm run build"
   
-  # Directory yang akan di-deploy
-  publish = "public"
+  # Directory yang akan di-deploy (root directory)
+  publish = "."
   
   # Functions directory
   functions = "netlify/functions"
@@ -16,6 +16,12 @@
 [[redirects]]
   from = "/*"
   to = "/index.html"
+  status = 200
+
+# API redirects ke functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/api/:splat"
   status = 200
 
 # Headers untuk security
