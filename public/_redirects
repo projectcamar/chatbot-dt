@@ -1,6 +1,5 @@
-# API redirects to Netlify Functions (must be first)
-/api/master-data    /.netlify/functions/master-data    200
-/api/chat    /.netlify/functions/chat    200
+# API redirects to single function (must be first)
+/api/*    /.netlify/functions/api    200
 
 # Redirect all other requests to index.html for SPA
 /*    /index.html   200

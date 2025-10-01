@@ -12,15 +12,10 @@
   # Node.js version
   NODE_VERSION = "18"
 
-# API redirects ke functions (must be first)
+# API redirects ke single function (must be first)
 [[redirects]]
-  from = "/api/master-data"
-  to = "/.netlify/functions/master-data"
-  status = 200
-
-[[redirects]]
-  from = "/api/chat"
-  to = "/.netlify/functions/chat"
+  from = "/api/*"
+  to = "/.netlify/functions/api"
   status = 200
 
 # Redirect rules untuk SPA

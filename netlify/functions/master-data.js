@@ -2,7 +2,6 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { getMasterData, setMasterData } = require('./shared-storage');
 
 const app = express();
 
@@ -17,16 +16,23 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// Load master data from shared storage
+// In-memory storage (per function instance)
+let masterData = {
+    content: '',
+    lastUpdated: null,
+    updatedBy: ''
+};
+
+// Load master data
 function loadMasterData() {
-    return getMasterData();
+    return masterData;
 }
 
-// Save master data to shared storage
+// Save master data
 function saveMasterData(data) {
     try {
-        setMasterData(data);
-        console.log('Master data saved to shared storage:', data);
+        masterData = data;
+        console.log('Master data saved:', masterData);
         return true;
     } catch (error) {
         console.error('Error saving master data:', error);
