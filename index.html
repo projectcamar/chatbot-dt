@@ -1005,21 +1005,32 @@
 
         // Copy AI message content to clipboard
         function copyAIMessage(messageElement) {
-            // Get the message content without "AI Assistant:" prefix
-            const messageText = messageElement.textContent.replace(/^AI Assistant:\s*/, '');
+            // Clone the message element to work with a copy
+            const clonedElement = messageElement.cloneNode(true);
+            
+            // Remove the copy button from the cloned element
+            const copyButton = clonedElement.querySelector('.copy-button');
+            if (copyButton) {
+                copyButton.remove();
+            }
+            
+            // Get the message content without "AI Assistant:" prefix and without copy button text
+            const messageText = clonedElement.textContent.replace(/^AI Assistant:\s*/, '').trim();
             
             // Copy to clipboard
             navigator.clipboard.writeText(messageText).then(() => {
                 // Show success feedback
-                const copyButton = messageElement.querySelector('.copy-button');
-                const originalText = copyButton.textContent;
-                copyButton.textContent = '✓ Copied!';
-                copyButton.classList.add('copied');
+                const originalCopyButton = messageElement.querySelector('.copy-button');
+                const originalText = originalCopyButton.textContent;
+                
+                // Clear the button content completely and set new text
+                originalCopyButton.innerHTML = '✓ Copied!';
+                originalCopyButton.classList.add('copied');
                 
                 // Reset after 2 seconds
                 setTimeout(() => {
-                    copyButton.textContent = originalText;
-                    copyButton.classList.remove('copied');
+                    originalCopyButton.innerHTML = originalText;
+                    originalCopyButton.classList.remove('copied');
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
