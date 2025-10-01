@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Build completed - Static site ready'",
+    "build": "echo 'Build completed - Static site ready' && exit 0",
     "netlify:dev": "netlify dev"
   },
   "dependencies": {

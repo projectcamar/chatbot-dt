@@ -1,7 +1,4 @@
 [build]
-  # Build command untuk Netlify Functions
-  command = "npm run build"
-  
   # Directory yang akan di-deploy (root directory)
   publish = "."
   

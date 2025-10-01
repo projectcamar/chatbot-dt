@@ -59,7 +59,7 @@ git push -u origin main
    - Select your repository: `supply-chain-chatbot`
 
 3. **Build Settings**
-   - **Build command**: `npm run build`
+   - **Build command**: (leave empty - no build needed)
    - **Publish directory**: `.` (root directory)
    - **Functions directory**: `netlify/functions`
 
