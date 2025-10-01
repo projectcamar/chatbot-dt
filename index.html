@@ -9,6 +9,7 @@
     <title>UNVR DT AIMasterdata</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -1346,6 +1347,10 @@
                 // Format content for PDF using AI
                 const formattedContent = await formatContentForPDF(originalMessage);
                 
+                // Analyze content for charts using AI
+                const chartSuggestions = analyzeDataForCharts(originalMessage);
+                console.log('AI detected chart opportunities:', chartSuggestions);
+                
                 // Create PDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
@@ -1394,8 +1399,9 @@
                 doc.setLineWidth(0.2);
                 doc.line(20, 49, 190, 49);
                 
-                // Process content for PDF with proper academic formatting
-                const lines = doc.splitTextToSize(formattedContent, 170);
+                // Process content for PDF with proper formatting
+                // Use full page width for better readability
+                const lines = doc.splitTextToSize(formattedContent, 160); // Increased width
                 let yPosition = 60;
                 
                 // Set main content font
@@ -1404,7 +1410,7 @@
                 doc.setTextColor(0, 0, 0);
                 
                 for (let i = 0; i < lines.length; i++) {
-                    if (yPosition > 280) {
+                    if (yPosition > 270) { // Better page break management
                         doc.addPage();
                         yPosition = 30;
                         
@@ -1424,9 +1430,62 @@
                         yPosition = 30;
                     }
                     
-                    // Add proper line spacing
+                    // Better line spacing and positioning
                     doc.text(lines[i], 20, yPosition);
-                    yPosition += 5.5;
+                    yPosition += 6; // Increased line spacing for better readability
+                }
+                
+                // Add charts if AI detected suitable data
+                if (chartSuggestions.length > 0) {
+                    yPosition += 10; // Add space before charts
+                    
+                    for (let i = 0; i < chartSuggestions.length; i++) {
+                        const chartSuggestion = chartSuggestions[i];
+                        
+                        // Check if we need a new page for the chart
+                        if (yPosition > 200) {
+                            doc.addPage();
+                            yPosition = 30;
+                            
+                            // Add page header
+                            doc.setFontSize(10);
+                            doc.setFont('times', 'italic');
+                            doc.setTextColor(0, 102, 203);
+                            doc.text('Unilever Masterdata - Page ' + (doc.internal.getCurrentPageInfo().pageNumber), 20, 20);
+                            doc.setDrawColor(0, 102, 203);
+                            doc.setLineWidth(0.3);
+                            doc.line(20, 25, 190, 25);
+                            
+                            yPosition = 30;
+                        }
+                        
+                        try {
+                            // Generate chart
+                            const chartImage = await generateChart(chartSuggestion);
+                            
+                            // Add chart title
+                            doc.setFontSize(12);
+                            doc.setFont('times', 'bold');
+                            doc.setTextColor(0, 0, 0);
+                            doc.text(chartSuggestion.title, 20, yPosition);
+                            yPosition += 10;
+                            
+                            // Add chart to PDF
+                            doc.addImage(chartImage, 'PNG', 20, yPosition, 160, 100);
+                            yPosition += 110; // Space after chart
+                            
+                            // Add chart description
+                            doc.setFontSize(9);
+                            doc.setFont('times', 'italic');
+                            doc.setTextColor(100, 100, 100);
+                            doc.text(`Grafik ${i + 1}: ${chartSuggestion.reason}`, 20, yPosition);
+                            yPosition += 15;
+                            
+                        } catch (error) {
+                            console.error('Error generating chart:', error);
+                            // Continue without chart if generation fails
+                        }
+                    }
                 }
                 
                 // Add elegant footer
@@ -1449,7 +1508,274 @@
             }
         }
 
-        // Format content for PDF using academic formatting
+        // AI function to detect data types and determine appropriate chart types
+        function analyzeDataForCharts(content) {
+            const chartSuggestions = [];
+            
+            // Look for numerical data patterns
+            const numberPatterns = [
+                // Percentage patterns
+                /(\d+\.?\d*%)/g,
+                // Currency patterns
+                /(IDR\s*[\d.,]+|Rp\s*[\d.,]+|\$\s*[\d.,]+)/g,
+                // Number patterns
+                /(\d+\.?\d*)\s*(juta|ribu|miliar|triliun)/g,
+                // Simple numbers
+                /(\d+\.?\d*)/g
+            ];
+            
+            // Look for categorical data patterns
+            const categoryPatterns = [
+                // List items with numbers
+                /(\d+\.\s*[^:]+:\s*[\d.,%]+)/g,
+                // Table-like data
+                /\|([^|]+)\|([^|]+)\|/g
+            ];
+            
+            // Extract potential data points
+            const dataPoints = [];
+            
+            // Extract from tables
+            const tableMatches = content.match(/\|([^|]+)\|([^|]+)\|/g);
+            if (tableMatches) {
+                tableMatches.forEach(match => {
+                    const cells = match.split('|').slice(1, -1).map(cell => cell.trim());
+                    if (cells.length >= 2) {
+                        dataPoints.push({
+                            label: cells[0],
+                            value: cells[1],
+                            type: 'table'
+                        });
+                    }
+                });
+            }
+            
+            // Extract from numbered lists
+            const listMatches = content.match(/(\d+\.\s*[^:]+:\s*[^.\n]+)/g);
+            if (listMatches) {
+                listMatches.forEach(match => {
+                    const parts = match.split(':');
+                    if (parts.length >= 2) {
+                        dataPoints.push({
+                            label: parts[0].replace(/^\d+\.\s*/, '').trim(),
+                            value: parts[1].trim(),
+                            type: 'list'
+                        });
+                    }
+                });
+            }
+            
+            // Analyze data and suggest chart types
+            if (dataPoints.length >= 3) {
+                const hasPercentages = dataPoints.some(dp => dp.value.includes('%'));
+                const hasCurrency = dataPoints.some(dp => dp.value.match(/IDR|Rp|\$/));
+                const hasNumbers = dataPoints.some(dp => dp.value.match(/\d+/));
+                
+                if (hasPercentages && dataPoints.length <= 8) {
+                    chartSuggestions.push({
+                        type: 'pie',
+                        title: 'Distribusi Data (%)',
+                        data: dataPoints,
+                        reason: 'Data persentase cocok untuk pie chart'
+                    });
+                }
+                
+                if (hasNumbers && dataPoints.length >= 4) {
+                    chartSuggestions.push({
+                        type: 'bar',
+                        title: 'Perbandingan Data',
+                        data: dataPoints,
+                        reason: 'Data numerik cocok untuk bar chart'
+                    });
+                }
+                
+                if (hasCurrency && dataPoints.length >= 4) {
+                    chartSuggestions.push({
+                        type: 'line',
+                        title: 'Trend Data Keuangan',
+                        data: dataPoints,
+                        reason: 'Data keuangan cocok untuk line chart'
+                    });
+                }
+            }
+            
+            return chartSuggestions;
+        }
+
+        // Generate chart based on data analysis
+        function generateChart(chartSuggestion) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 400;
+            canvas.style.display = 'none';
+            document.body.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Unilever color palette
+            const unileverColors = [
+                '#0066CB', // Unilever blue
+                '#00A651', // Green
+                '#FF6B35', // Orange
+                '#8E44AD', // Purple
+                '#E74C3C', // Red
+                '#F39C12', // Yellow
+                '#1ABC9C', // Teal
+                '#95A5A6'  // Gray
+            ];
+            
+            // Process data for chart
+            const labels = chartSuggestion.data.map(item => item.label);
+            const values = chartSuggestion.data.map(item => {
+                const val = item.value.replace(/[^\d.,]/g, '');
+                return parseFloat(val.replace(',', '.')) || 0;
+            });
+            
+            let chartConfig;
+            
+            switch (chartSuggestion.type) {
+                case 'pie':
+                    chartConfig = {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: values,
+                                backgroundColor: unileverColors.slice(0, values.length),
+                                borderColor: '#ffffff',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: chartSuggestion.title,
+                                    font: {
+                                        size: 16,
+                                        family: 'Times New Roman'
+                                    }
+                                },
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        font: {
+                                            family: 'Times New Roman'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    break;
+                    
+                case 'bar':
+                    chartConfig = {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Nilai',
+                                data: values,
+                                backgroundColor: unileverColors[0],
+                                borderColor: unileverColors[0],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: chartSuggestion.title,
+                                    font: {
+                                        size: 16,
+                                        family: 'Times New Roman'
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        font: {
+                                            family: 'Times New Roman'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            family: 'Times New Roman'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    break;
+                    
+                case 'line':
+                    chartConfig = {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Trend',
+                                data: values,
+                                borderColor: unileverColors[0],
+                                backgroundColor: unileverColors[0] + '20',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: chartSuggestion.title,
+                                    font: {
+                                        size: 16,
+                                        family: 'Times New Roman'
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        font: {
+                                            family: 'Times New Roman'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            family: 'Times New Roman'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    break;
+            }
+            
+            const chart = new Chart(ctx, chartConfig);
+            
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const imageData = canvas.toDataURL('image/png');
+                    document.body.removeChild(canvas);
+                    resolve(imageData);
+                }, 1000);
+            });
+        }
+
+        // Format content for PDF using clean, readable formatting
         async function formatContentForPDF(content) {
             // Clean and format the content for better PDF presentation
             let formatted = content;
@@ -1458,7 +1784,7 @@
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
             formatted = formatted.replace(/\*(.*?)\*/g, '$1'); // Remove italic
             
-            // Handle markdown tables properly with academic formatting
+            // Handle markdown tables properly with clean formatting
             const tableRegex = /(\|.*\|(?:\s*\n\|.*\|)*)/g;
             formatted = formatted.replace(tableRegex, (match) => {
                 const lines = match.trim().split('\n').filter(line => line.trim());
@@ -1478,21 +1804,21 @@
                     line.split('|').slice(1, -1).map(cell => cell.trim())
                 );
                 
-                // Format as academic table
+                // Format as clean table
                 let tableText = '\n\n';
                 
                 // Add table title
-                tableText += 'Tabel: Data Informasi\n';
-                tableText += '='.repeat(50) + '\n\n';
+                tableText += 'TABEL DATA INFORMASI\n';
+                tableText += '='.repeat(60) + '\n\n';
                 
                 // Add header with proper spacing
-                const headerText = headerCells.map(cell => cell.padEnd(25)).join(' | ');
+                const headerText = headerCells.map(cell => cell.padEnd(20)).join(' | ');
                 tableText += headerText + '\n';
                 tableText += '-'.repeat(headerText.length) + '\n';
                 
                 // Add data rows
                 dataRows.forEach(row => {
-                    const rowText = row.map(cell => cell.padEnd(25)).join(' | ');
+                    const rowText = row.map(cell => cell.padEnd(20)).join(' | ');
                     tableText += rowText + '\n';
                 });
                 
@@ -1500,19 +1826,26 @@
                 return tableText;
             });
             
-            // Clean up multiple spaces and line breaks
-            formatted = formatted.replace(/\n\s*\n/g, '\n\n');
-            formatted = formatted.replace(/[ \t]+/g, ' ');
+            // Clean up content for better readability
+            formatted = formatted.replace(/\n\s*\n/g, '\n\n'); // Clean up multiple line breaks
+            formatted = formatted.replace(/[ \t]+/g, ' '); // Clean up multiple spaces
             
-            // Add proper academic spacing and structure
+            // Better paragraph and section formatting
             formatted = formatted.replace(/(\d+\.\s+[^\n]+)/g, '\n\n$1'); // Add spacing before numbered lists
             formatted = formatted.replace(/([.!?])\s*([A-Z])/g, '$1 $2'); // Proper sentence spacing
             formatted = formatted.replace(/([.!?])\s*([A-Z][a-z])/g, '$1\n\n$2'); // Paragraph breaks
             
-            // Add proper indentation for lists
-            formatted = formatted.replace(/(\d+\.\s+)/g, '    $1');
+            // Clean up list formatting
+            formatted = formatted.replace(/(\d+\.\s+)/g, '$1'); // Clean numbered lists
+            formatted = formatted.replace(/([a-zA-Z])\s*-\s*([a-zA-Z])/g, '$1 - $2'); // Clean bullet points
             
-            return formatted.trim();
+            // Remove excessive line breaks
+            formatted = formatted.replace(/\n{3,}/g, '\n\n'); // Max 2 line breaks
+            
+            // Clean up the final content
+            formatted = formatted.trim();
+            
+            return formatted;
         }
 
         // Initialize mobile features
