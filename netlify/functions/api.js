@@ -2,6 +2,7 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -41,6 +42,143 @@ function saveMasterData(data) {
     }
 }
 
+// RAG System: Chunking and Indexing
+class RAGSystem {
+    constructor() {
+        this.chunks = [];
+        this.index = new Map();
+        this.embeddings = new Map();
+    }
+
+    // Chunk text into smaller, meaningful pieces
+    chunkText(text, chunkSize = 500, overlap = 50) {
+        if (!text || text.length === 0) return [];
+        
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const chunks = [];
+        let currentChunk = '';
+        
+        for (let i = 0; i < sentences.length; i++) {
+            const sentence = sentences[i].trim();
+            if (currentChunk.length + sentence.length <= chunkSize) {
+                currentChunk += (currentChunk ? '. ' : '') + sentence;
+            } else {
+                if (currentChunk) {
+                    chunks.push({
+                        id: crypto.randomUUID(),
+                        content: currentChunk + '.',
+                        metadata: {
+                            chunkIndex: chunks.length,
+                            wordCount: currentChunk.split(' ').length,
+                            charCount: currentChunk.length
+                        }
+                    });
+                }
+                currentChunk = sentence;
+            }
+        }
+        
+        if (currentChunk) {
+            chunks.push({
+                id: crypto.randomUUID(),
+                content: currentChunk + '.',
+                metadata: {
+                    chunkIndex: chunks.length,
+                    wordCount: currentChunk.split(' ').length,
+                    charCount: currentChunk.length
+                }
+            });
+        }
+        
+        return chunks;
+    }
+
+    // Simple keyword-based indexing
+    buildIndex(chunks) {
+        this.chunks = chunks;
+        this.index.clear();
+        
+        chunks.forEach(chunk => {
+            const words = chunk.content.toLowerCase()
+                .replace(/[^\w\s]/g, ' ')
+                .split(/\s+/)
+                .filter(word => word.length > 2);
+            
+            words.forEach(word => {
+                if (!this.index.has(word)) {
+                    this.index.set(word, []);
+                }
+                this.index.get(word).push(chunk.id);
+            });
+        });
+    }
+
+    // Semantic search using keyword matching and context
+    searchRelevantChunks(query, maxResults = 5) {
+        if (!query || this.chunks.length === 0) return [];
+        
+        const queryWords = query.toLowerCase()
+            .replace(/[^\w\s]/g, ' ')
+            .split(/\s+/)
+            .filter(word => word.length > 2);
+        
+        const chunkScores = new Map();
+        
+        // Score chunks based on keyword matches
+        queryWords.forEach(word => {
+            if (this.index.has(word)) {
+                this.index.get(word).forEach(chunkId => {
+                    const currentScore = chunkScores.get(chunkId) || 0;
+                    chunkScores.set(chunkId, currentScore + 1);
+                });
+            }
+        });
+        
+        // Add context-based scoring (simple proximity)
+        this.chunks.forEach(chunk => {
+            const content = chunk.content.toLowerCase();
+            let contextScore = 0;
+            
+            queryWords.forEach(word => {
+                if (content.includes(word)) {
+                    contextScore += 0.5;
+                }
+            });
+            
+            if (contextScore > 0) {
+                const currentScore = chunkScores.get(chunk.id) || 0;
+                chunkScores.set(chunk.id, currentScore + contextScore);
+            }
+        });
+        
+        // Sort by score and return top results
+        return Array.from(chunkScores.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, maxResults)
+            .map(([chunkId, score]) => {
+                const chunk = this.chunks.find(c => c.id === chunkId);
+                return { ...chunk, relevanceScore: score };
+            });
+    }
+
+    // Process master data with RAG
+    processMasterData(content) {
+        if (!content || content.length === 0) return '';
+        
+        const chunks = this.chunkText(content);
+        this.buildIndex(chunks);
+        
+        return {
+            chunks: chunks,
+            totalChunks: chunks.length,
+            indexed: true
+        };
+    }
+}
+
+// Initialize RAG system
+const ragSystem = new RAGSystem();
+
 // Routes
 app.get('/api/master-data', (req, res) => {
     console.log('GET /api/master-data called');
@@ -49,41 +187,40 @@ app.get('/api/master-data', (req, res) => {
     res.json(data);
 });
 
-// Get master data batch
-app.get('/api/master-data/batch/:batchNumber', (req, res) => {
+// RAG Search endpoint
+app.post('/api/rag-search', (req, res) => {
     try {
-        const batchNumber = parseInt(req.params.batchNumber) || 1;
+        const { query, maxResults = 5 } = req.body;
+        
+        if (!query) {
+            return res.status(400).json({ success: false, error: 'Query is required' });
+        }
+        
         const masterData = loadMasterData();
         const content = masterData.content || '';
         
         if (!content) {
-            return res.json({ success: true, data: { content: 'Tidak ada data tersimpan', batch: 1, totalBatches: 1 } });
+            return res.json({ success: true, data: { chunks: [], totalChunks: 0 } });
         }
         
-        const chunks = content.split('\n');
-        const chunkSize = 100;
-        const totalBatches = Math.ceil(chunks.length / chunkSize);
+        // Process master data with RAG
+        const ragResult = ragSystem.processMasterData(content);
         
-        if (batchNumber < 1 || batchNumber > totalBatches) {
-            return res.status(400).json({ success: false, error: 'Invalid batch number' });
-        }
+        // Search for relevant chunks
+        const relevantChunks = ragSystem.searchRelevantChunks(query, maxResults);
         
-        const startIndex = (batchNumber - 1) * chunkSize;
-        const endIndex = Math.min(startIndex + chunkSize, chunks.length);
-        const batchContent = chunks.slice(startIndex, endIndex).join('\n');
-        
-        res.json({ 
-            success: true, 
-            data: { 
-                content: `[BATCH ${batchNumber} dari ${totalBatches} batch]\n${batchContent}`,
-                batch: batchNumber,
-                totalBatches: totalBatches,
-                totalLines: chunks.length
-            } 
+        res.json({
+            success: true,
+            data: {
+                chunks: relevantChunks,
+                totalChunks: ragResult.totalChunks,
+                query: query,
+                resultsCount: relevantChunks.length
+            }
         });
     } catch (error) {
-        console.error('Error loading master data batch:', error);
-        res.status(500).json({ success: false, error: 'Failed to load master data batch' });
+        console.error('Error in RAG search:', error);
+        res.status(500).json({ success: false, error: 'Failed to perform RAG search' });
     }
 });
 
@@ -136,19 +273,28 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-        // Load master data with batching
+        // Load master data and process with RAG
         const masterData = loadMasterData();
         let contextData = masterData.content || 'Tidak ada data tersimpan';
         
-        // Implement batching for large master data
-        if (contextData && contextData.length > 50000) { // If content is larger than 50KB
-            // Split content into chunks
-            const chunks = contextData.split('\n');
-            const chunkSize = 100; // Process 100 lines at a time
-            const firstChunk = chunks.slice(0, chunkSize).join('\n');
+        // Process master data with RAG system
+        if (contextData && contextData.length > 0) {
+            const ragResult = ragSystem.processMasterData(contextData);
+            console.log(`RAG: Processed ${ragResult.totalChunks} chunks from master data`);
             
-            contextData = `[BATCH 1 dari ${Math.ceil(chunks.length / chunkSize)} batch]\n${firstChunk}`;
-            contextData += `\n\n[CATATAN: Master data berisi ${chunks.length} baris. Menampilkan ${chunkSize} baris pertama. Jika informasi yang dicari tidak ditemukan, silakan tanyakan dengan lebih spesifik atau minta untuk mencari di batch berikutnya.]`;
+            // Search for relevant chunks based on user query
+            const relevantChunks = ragSystem.searchRelevantChunks(message, 3);
+            
+            if (relevantChunks.length > 0) {
+                // Use only relevant chunks as context
+                contextData = relevantChunks.map(chunk => chunk.content).join('\n\n');
+                console.log(`RAG: Using ${relevantChunks.length} relevant chunks (${contextData.length} chars)`);
+            } else {
+                // Fallback to first few chunks if no relevant chunks found
+                const firstChunks = ragResult.chunks.slice(0, 2);
+                contextData = firstChunks.map(chunk => chunk.content).join('\n\n');
+                console.log('RAG: No relevant chunks found, using first 2 chunks as fallback');
+            }
         }
         
         // Prepare conversation history
