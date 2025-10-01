@@ -2,9 +2,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Supply Chain AI Assistant</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,178 +17,250 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
             min-height: 100vh;
-            padding: 20px;
+            color: #123062;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: flex;
-            min-height: 600px;
-        }
-
-        .chat-section {
-            flex: 2;
-            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        .admin-section {
+        .header {
+            background: #0066CB;
+            color: white;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,102,203,0.2);
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
             flex: 1;
-            background: #f8f9fa;
-            padding: 20px;
-            border-left: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .chat-container {
             flex: 1;
             border: 1px solid #e9ecef;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
             overflow-y: auto;
-            max-height: 400px;
+            max-height: 500px;
             background: #fafafa;
         }
 
         .message {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 80%;
+            border-radius: 12px;
             word-wrap: break-word;
+            font-size: 0.9em;
+            line-height: 1.4;
         }
 
         .user-message {
-            background: #007bff;
+            background: #0066CB;
             color: white;
             margin-left: auto;
             text-align: right;
+            max-width: 60%;
         }
 
         .ai-message {
-            background: #e9ecef;
-            color: #333;
+            background: #f1f3f4;
+            color: #123062;
+            border: 1px solid #e9ecef;
+            max-width: 85%;
         }
 
         .input-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
         }
 
         .input-group input {
             flex: 1;
             padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9em;
             outline: none;
+            background: white;
         }
 
         .input-group input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+            border-color: #0066CB;
+            box-shadow: 0 0 0 2px rgba(0,102,203,0.1);
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 25px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .btn-primary {
-            background: #007bff;
+            background: #0066CB;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
+            background: #0052a3;
         }
 
         .btn-secondary {
-            background: #6c757d;
+            background: #DCA972;
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #545b62;
+            background: #c9975a;
         }
 
-        .admin-panel {
-            background: white;
-            border-radius: 10px;
+        .btn-edit {
+            background: #123062;
+            color: white;
+            font-size: 0.8em;
+            padding: 8px 16px;
+        }
+
+        .btn-edit:hover {
+            background: #0f2750;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: #0066CB;
+            color: white;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .admin-panel h3 {
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .close {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 24px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #123062;
+            font-size: 0.9em;
         }
 
         .form-group input, .form-group textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9em;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #0066CB;
+            box-shadow: 0 0 0 2px rgba(0,102,203,0.1);
+            outline: none;
         }
 
         .form-group textarea {
-            height: 100px;
+            height: 200px;
             resize: vertical;
         }
 
-        .login-form {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
         }
 
         .hidden {
@@ -192,10 +269,10 @@
 
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 6px;
         }
 
         .status-online {
@@ -208,20 +285,21 @@
 
         .data-preview {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 12px;
-            max-height: 200px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.8em;
+            max-height: 150px;
             overflow-y: auto;
+            border: 1px solid #e9ecef;
         }
 
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #0066CB;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -230,32 +308,270 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Mobile Responsive Design */
+        @media screen and (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 0;
+                min-height: 100vh;
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.4em;
+                margin-bottom: 6px;
+            }
+
+            .header p {
+                font-size: 0.8em;
+            }
+
+            .btn-edit {
+                font-size: 0.7em;
+                padding: 6px 12px;
+                margin-top: 8px;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .chat-section {
+                max-width: 100%;
+            }
+
+            .chat-container {
+                padding: 16px;
+                max-height: 400px;
+                border-radius: 8px;
+            }
+
+            .message {
+                font-size: 0.85em;
+                padding: 10px 14px;
+                margin-bottom: 12px;
+            }
+
+            .user-message {
+                max-width: 70%;
+            }
+
+            .ai-message {
+                max-width: 90%;
+            }
+
+            .input-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .input-group input {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 14px 16px;
+                border-radius: 8px;
+            }
+
+            .btn {
+                padding: 14px 20px;
+                font-size: 0.9em;
+                width: 100%;
+            }
+
+            /* Modal Mobile Optimization */
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                padding: 16px;
+            }
+
+            .modal-header h3 {
+                font-size: 1.1em;
+            }
+
+            .modal-body {
+                padding: 16px;
+            }
+
+            .form-group textarea {
+                height: 150px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .modal-footer {
+                padding: 16px;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+
+            .data-preview {
+                font-size: 0.75em;
+                max-height: 120px;
+            }
+        }
+
+        /* Small Mobile (iPhone SE, etc.) */
+        @media screen and (max-width: 480px) {
+            .header {
+                padding: 12px;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+            }
+
+            .main-content {
+                padding: 12px;
+            }
+
+            .chat-container {
+                padding: 12px;
+                max-height: 350px;
+            }
+
+            .message {
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
+
+            .user-message {
+                max-width: 75%;
+            }
+
+            .ai-message {
+                max-width: 95%;
+            }
+
+            .input-group input {
+                padding: 12px 14px;
+            }
+
+            .btn {
+                padding: 12px 16px;
+                font-size: 0.85em;
+            }
+
+            .modal-content {
+                width: 98%;
+                margin: 5% auto;
+            }
+
+            .modal-header {
+                padding: 12px;
+            }
+
+            .modal-body {
+                padding: 12px;
+            }
+
+            .form-group textarea {
+                height: 120px;
+            }
+
+            .modal-footer {
+                padding: 12px;
+            }
+        }
+
+        /* Landscape Mobile */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            .chat-container {
+                max-height: 250px;
+            }
+
+            .modal-content {
+                margin: 2% auto;
+                max-height: 95vh;
+            }
+
+            .form-group textarea {
+                height: 100px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+
+            .close {
+                font-size: 28px;
+                padding: 8px;
+            }
+
+            .input-group input {
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Password Protection Modal -->
+        <div id="passwordModal" class="modal" style="display: block;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔐 DT Internal Masterdata Access</h3>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align: center; margin-bottom: 20px; color: #666;">
+                        Hi and thank you for stopping by! This page is specially made for DT Internal team members.<br>
+                        Please enter the access code to continue.
+                    </p>
+                    <div class="form-group">
+                        <label for="accessPassword">Access Code:</label>
+                        <input type="password" id="accessPassword" placeholder="Enter access code" onkeypress="handlePasswordKeyPress(event)">
+                    </div>
+                    <button class="btn btn-primary" onclick="checkPassword()" style="width: 100%;">Enter</button>
+                </div>
+            </div>
+        </div>
+
         <div class="header">
-            <h1>🤖 Supply Chain AI Assistant</h1>
-            <p>AI-powered customer service untuk supply chain management</p>
+            <h1>🤖 DT Internal Masterdata</h1>
+            <p>AI-powered data management untuk internal team</p>
+            <button class="btn btn-edit" onclick="openAdminModal()" style="margin-top: 12px;">Edit Master Data</button>
         </div>
 
         <div class="main-content">
             <div class="chat-section">
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
-                        <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk Supply Chain. Saya siap membantu menjawab pertanyaan Anda tentang operasional supply chain, distribusi, dan manajemen logistik. Silakan tanyakan apa saja!
+                        <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <input type="text" id="userInput" placeholder="Tanyakan tentang supply chain..." onkeypress="handleKeyPress(event)">
+                    <input type="text" id="userInput" placeholder="Tanyakan tentang data internal..." onkeypress="handleKeyPress(event)">
                     <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
                 </div>
             </div>
 
-            <div class="admin-section">
-                <div id="loginForm" class="login-form">
-                    <h3>🔓 Admin Unlock</h3>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Admin Panel</h3>
+                <span class="close" onclick="closeAdminModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="loginForm">
                     <div class="form-group">
                         <label for="adminCode">Unlock Code:</label>
                         <input type="password" id="adminCode" placeholder="Masukkan unlock code" onkeypress="handleUnlockKeyPress(event)">
@@ -263,17 +579,13 @@
                     <button class="btn btn-primary" onclick="unlockAdmin()" style="width: 100%;">🔓 Unlock Admin</button>
                 </div>
 
-                <div id="adminPanel" class="admin-panel hidden">
-                    <h3>⚙️ Admin Panel</h3>
+                <div id="adminPanel" class="hidden">
                     <p><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong></p>
                     
                     <div class="form-group">
-                        <label for="masterData">📋 Master Data & Knowledge Base:</label>
-                        <textarea id="masterData" style="height: 300px;" placeholder="Paste semua data di sini (Ctrl+V):&#10;&#10;Contoh format:&#10;=== INFORMASI PERUSAHAAN ===&#10;Nama: PT Supply Chain Indonesia&#10;Visi: Menjadi leader di industri supply chain...&#10;&#10;=== DATA SUPPLY CHAIN ===&#10;Proses distribusi: 1. Penerimaan barang dari supplier...&#10;&#10;=== FAQ & PANDUAN ===&#10;Q: Bagaimana cara tracking shipment?&#10;A: Bisa melalui portal customer...&#10;&#10;=== INFORMASI KONTAK ===&#10;Email: info@company.com&#10;Telp: 021-1234567&#10;Jam operasional: Senin-Jumat 08:00-17:00"></textarea>
+                        <label for="masterData">📋 DT Internal Master Data:</label>
+                        <textarea id="masterData" placeholder="Paste semua data internal di sini (Ctrl+V):&#10;&#10;Contoh format:&#10;=== INFORMASI PERUSAHAAN ===&#10;Nama: PT Unilever Indonesia&#10;Divisi: DT Internal&#10;Lokasi: Jakarta, Bandung, Surabaya...&#10;&#10;=== DATA OPERASIONAL ===&#10;Proses internal: 1. Data collection...&#10;Sistem: SAP, Oracle, Custom tools...&#10;&#10;=== FAQ & PANDUAN INTERNAL ===&#10;Q: Bagaimana cara akses data X?&#10;A: Login ke portal internal...&#10;&#10;=== INFORMASI KONTAK INTERNAL ===&#10;Email: dt.internal@unilever.com&#10;Ext: 1234&#10;Jam kerja: Senin-Jumat 08:00-17:00"></textarea>
                     </div>
-
-                    <button class="btn btn-primary" onclick="saveData()" style="width: 100%; margin-bottom: 10px;">💾 Simpan Data</button>
-                    <button class="btn btn-secondary" onclick="logoutAdmin()" style="width: 100%;">🔒 Lock Admin</button>
 
                     <div class="data-preview" id="dataPreview">
                         <strong>📊 Preview Data:</strong><br>
@@ -281,18 +593,44 @@
                     </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAdminModal()">Tutup</button>
+                <button class="btn btn-primary" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan Data</button>
+            </div>
         </div>
     </div>
 
     <!-- Socket.io removed for production -->
     <script>
-        // Admin unlock trigger (internal use only)
+        // Access codes (internal use only)
+        const ACCESS_PASSWORD = 'dtunilever2025';
         const ADMIN_UNLOCK_CODE = 'ugi354';
 
+        let isAccessGranted = false;
         let isAdminLoggedIn = false;
         let conversationHistory = [];
         let socket = null;
         let currentMasterData = '';
+
+        // Password protection functions
+        function checkPassword() {
+            const password = document.getElementById('accessPassword').value;
+            
+            if (password === ACCESS_PASSWORD) {
+                isAccessGranted = true;
+                document.getElementById('passwordModal').style.display = 'none';
+                document.getElementById('userInput').focus();
+            } else {
+                alert('❌ Access code salah!');
+                document.getElementById('accessPassword').value = '';
+            }
+        }
+
+        function handlePasswordKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
 
         // Initialize data loading (simple approach)
         function initializeSocket() {
@@ -331,6 +669,18 @@
             }
         }
 
+        // Modal functions
+        function openAdminModal() {
+            document.getElementById('adminModal').style.display = 'block';
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('saveBtn').style.display = 'none';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
         // Unlock admin panel
         function unlockAdmin() {
             const unlockCode = document.getElementById('adminCode').value;
@@ -339,6 +689,7 @@
                 isAdminLoggedIn = true;
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
+                document.getElementById('saveBtn').style.display = 'inline-block';
                 initializeData();
             } else {
                 alert('❌ Unlock code salah!');
@@ -359,6 +710,41 @@
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('adminCode').value = '';
         }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('adminModal');
+            if (event.target === modal) {
+                closeAdminModal();
+            }
+        }
+
+        // Mobile-specific improvements
+        function handleMobileInput() {
+            // Prevent zoom on iOS when focusing input
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (window.innerWidth <= 768) {
+                        document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                    }
+                });
+            });
+        }
+
+        // Initialize mobile features
+        document.addEventListener('DOMContentLoaded', function() {
+            handleMobileInput();
+            
+            // Prevent double-tap zoom on buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    button.click();
+                });
+            });
+        });
 
         // Save data to server (admin only)
         async function saveData() {
@@ -425,6 +811,11 @@
 
         // Send message to AI
         async function sendMessage() {
+            if (!isAccessGranted) {
+                alert('❌ Please enter access code first!');
+                return;
+            }
+            
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
             
