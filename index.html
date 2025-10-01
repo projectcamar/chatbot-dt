@@ -1425,13 +1425,14 @@
             try {
                 // Disable button and show loading
                 pdfButton.disabled = true;
-                pdfButton.textContent = '📄 Generating PDF...';
+                pdfButton.textContent = '🤖 AI Processing...';
                 
-                // Parse content directly from chat bubble (already clean, no AI needed)
-                const chatContent = messageElement.querySelector('.ai-message').textContent;
-                const cleanContent = chatContent.replace(/^AI Assistant:\s*/, '').trim();
+                // AI-powered content cleaning and formatting
+                const aiProcessedContent = await processContentWithAI(originalMessage);
                 
-                console.log('Using clean chat content directly (no AI processing)');
+                // AI-powered chart analysis and generation
+                const chartSuggestions = await analyzeDataWithAI(originalMessage);
+                console.log('AI detected chart opportunities:', chartSuggestions);
                 
                 // Create PDF
                 const { jsPDF } = window.jspdf;
@@ -1487,9 +1488,9 @@
                 doc.line(20, 50, 20, 280); // Left margin
                 doc.line(170, 50, 170, 280); // Right margin
                 
-                // Process clean content for PDF with proper formatting
+                // Process AI-cleaned content for PDF with proper formatting
                 // Use proper margins - left: 20, right: 20, so content width = 140
-                const lines = doc.splitTextToSize(cleanContent, 140); // Reduced width to prevent overlapping
+                const lines = doc.splitTextToSize(aiProcessedContent, 140); // Reduced width to prevent overlapping
                 let yPosition = 60;
                 
                 // Set main content font
@@ -1567,7 +1568,58 @@
                     }
                 }
                 
-                // No chart generation - using clean text only
+                // Add AI-suggested charts
+                if (chartSuggestions.length > 0) {
+                    yPosition += 10; // Add space before charts
+                    
+                    for (let i = 0; i < chartSuggestions.length; i++) {
+                        const chartSuggestion = chartSuggestions[i];
+                        
+                        // Check if we need a new page for the chart
+                        if (yPosition > 200) {
+                            doc.addPage();
+                            yPosition = 30;
+                            
+                            // Add page header
+                            doc.setFontSize(10);
+                            doc.setFont('times', 'italic');
+                            doc.setTextColor(0, 102, 203);
+                            doc.text('Unilever Masterdata - Page ' + (doc.internal.getCurrentPageInfo().pageNumber), 20, 20);
+                            doc.setDrawColor(0, 102, 203);
+                            doc.setLineWidth(0.3);
+                            doc.line(20, 25, 190, 25);
+                            
+                            yPosition = 30;
+                        }
+                        
+                        try {
+                            // Generate chart
+                            const chartImage = await generateChart(chartSuggestion);
+                            
+                            // Add chart title
+                            doc.setFontSize(12);
+                            doc.setFont('times', 'bold');
+                            doc.setTextColor(0, 0, 0);
+                            doc.text(chartSuggestion.title, 20, yPosition);
+                            yPosition += 10;
+                            
+                            // Add chart to PDF
+                            doc.addImage(chartImage, 'PNG', 20, yPosition, 160, 100);
+                            yPosition += 110; // Space after chart
+                            
+                            // Add chart description
+                            doc.setFontSize(9);
+                            doc.setFont('times', 'italic');
+                            doc.setTextColor(100, 100, 100);
+                            doc.text(`Grafik ${i + 1}: ${chartSuggestion.reason}`, 20, yPosition);
+                            yPosition += 15;
+                            
+                        } catch (error) {
+                            console.error('Error generating chart:', error);
+                            // Continue without chart if generation fails
+                        }
+                    }
+                }
                 
                 // Add elegant footer
                 doc.setFontSize(8);
