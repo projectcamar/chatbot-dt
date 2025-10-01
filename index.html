@@ -1443,13 +1443,13 @@
                 // Add logo using base64 or direct image loading
                 try {
                     // Load logo and add to PDF
-                    const logoResponse = await fetch('assets/Unilever_logo-onlytext.png');
+                    const logoResponse = await fetch('assets/Unilever-Logo-PNG.webp');
                     const logoBlob = await logoResponse.blob();
                     const logoArrayBuffer = await logoBlob.arrayBuffer();
                     const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoArrayBuffer)));
                     
                     // Add logo to PDF
-                    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 15, 25, 12);
+                    doc.addImage(`data:image/webp;base64,${logoBase64}`, 'WEBP', 20, 15, 25, 12);
                 } catch (error) {
                     console.log('Logo not available, using text header');
                 }
