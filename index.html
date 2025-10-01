@@ -1031,6 +1031,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Always update current master data from server
                     currentMasterData = data.content || '';
                     document.getElementById('masterData').value = currentMasterData;
                     updateDataPreview();
@@ -1091,13 +1092,8 @@
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('saveBtn').style.display = 'inline-block';
                 
-                // Load master data into admin panel
-                if (currentMasterData) {
-                    document.getElementById('masterData').value = currentMasterData;
-                    updateDataPreview();
-                } else {
-                    initializeData();
-                }
+                // Load master data from server
+                loadMasterData();
                 
                 updateAdminStatus();
             } else {
@@ -1154,14 +1150,12 @@
                 // Load chat history
                 loadChatHistory();
                 
+                // Always load master data from server for all users
+                loadMasterData();
+                
                 // Update admin status if logged in as admin
                 if (isAdminLoggedIn) {
                     updateAdminStatus();
-                    // Load master data into admin panel
-                    if (currentMasterData) {
-                        document.getElementById('masterData').value = currentMasterData;
-                        updateDataPreview();
-                    }
                 }
             } else {
                 // No valid session, show password modal
@@ -1174,6 +1168,9 @@
             // Update session info every minute
             setInterval(updateSessionInfo, 60 * 1000);
             updateSessionInfo(); // Initial update
+            
+            // Sync master data every 2 minutes to get latest updates
+            setInterval(loadMasterData, 2 * 60 * 1000);
             
             // Prevent double-tap zoom on buttons
             const buttons = document.querySelectorAll('.btn');
