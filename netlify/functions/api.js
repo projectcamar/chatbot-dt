@@ -14,7 +14,8 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' })); // Increase limit to 50MB
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // In-memory storage (shared dalam satu function)
 let masterData = {

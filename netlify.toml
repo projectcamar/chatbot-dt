@@ -40,3 +40,9 @@
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Content-Length = "52428800"  # 50MB limit
+
+# Function configuration untuk meningkatkan limit
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express", "serverless-http", "cors", "body-parser"]

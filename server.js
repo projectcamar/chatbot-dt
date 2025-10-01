@@ -24,7 +24,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' })); // Increase limit to 50MB
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 
 // In-memory storage untuk master data (simple solution)
