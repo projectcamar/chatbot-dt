@@ -12,16 +12,16 @@
   # Node.js version
   NODE_VERSION = "18"
 
+# API redirects ke functions (must be first)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/api/:splat"
+  status = 200
+
 # Redirect rules untuk SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-
-# API redirects ke functions
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/api/:splat"
   status = 200
 
 # Headers untuk security
