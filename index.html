@@ -107,6 +107,62 @@
             min-width: 60px;
         }
 
+        .ai-message p {
+            margin: 0 0 8px 0;
+            line-height: 1.5;
+        }
+
+        .ai-message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .ai-message ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .ai-message li {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .ai-message strong {
+            color: #0066CB;
+            font-weight: 600;
+        }
+
+        .ai-message {
+            position: relative;
+        }
+
+        .ai-message .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #0066CB;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.7em;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .ai-message:hover .copy-button {
+            opacity: 1;
+        }
+
+        .ai-message .copy-button:hover {
+            background: #0052a3;
+        }
+
+        .ai-message .copy-button.copied {
+            background: #28a745;
+        }
+
         .input-group {
             display: flex;
             gap: 12px;
@@ -410,6 +466,11 @@
             .input-group .btn-secondary {
                 min-width: 44px;
                 padding: 12px;
+            }
+
+            .ai-message .copy-button {
+                font-size: 0.6em;
+                padding: 3px 6px;
             }
 
             /* Modal Mobile Optimization */
@@ -739,6 +800,16 @@
                             const messageDiv = document.createElement('div');
                             messageDiv.className = msg.className;
                             messageDiv.innerHTML = msg.content;
+                            
+                            // Add copy button for AI messages
+                            if (msg.className.includes('ai-message')) {
+                                const copyButton = document.createElement('button');
+                                copyButton.className = 'copy-button';
+                                copyButton.textContent = '📋 Copy';
+                                copyButton.onclick = () => copyAIMessage(messageDiv);
+                                messageDiv.appendChild(copyButton);
+                            }
+                            
                             chatContainer.appendChild(messageDiv);
                         }
                     });
@@ -766,6 +837,57 @@
                 
                 alert('✅ Riwayat chat berhasil dihapus!');
             }
+        }
+
+        // Format AI response text
+        function formatAIResponse(text) {
+            // Convert markdown bold (**text**) to HTML bold
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert numbered lists (1. 2. 3.) to proper HTML lists
+            text = text.replace(/(\d+\.\s+[^\n]+(?:\n(?!(?:\d+\.|\n))[^\n]+)*)/g, (match) => {
+                const items = match.split(/\n(?=\d+\.)/);
+                const listItems = items.map(item => {
+                    const cleanItem = item.replace(/^\d+\.\s*/, '').trim();
+                    return `<li>${cleanItem}</li>`;
+                }).join('');
+                return `<ol>${listItems}</ol>`;
+            });
+            
+            // Convert line breaks to HTML breaks
+            text = text.replace(/\n/g, '<br>');
+            
+            // Convert multiple line breaks to paragraph breaks
+            text = text.replace(/(<br>\s*){2,}/g, '</p><p>');
+            
+            // Wrap in paragraph tags
+            text = `<p>${text}</p>`;
+            
+            return text;
+        }
+
+        // Copy AI message content to clipboard
+        function copyAIMessage(messageElement) {
+            // Get the message content without "AI Assistant:" prefix
+            const messageText = messageElement.textContent.replace(/^AI Assistant:\s*/, '');
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(messageText).then(() => {
+                // Show success feedback
+                const copyButton = messageElement.querySelector('.copy-button');
+                const originalText = copyButton.textContent;
+                copyButton.textContent = '✓ Copied!';
+                copyButton.classList.add('copied');
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.textContent = originalText;
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Gagal menyalin teks ke clipboard');
+            });
         }
 
         // Session management functions
@@ -1209,7 +1331,21 @@
             messageDiv.className = `message ${sender}-message`;
             
             const senderName = sender === 'user' ? 'Anda' : 'AI Assistant';
-            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            
+            // Format AI response if it's from AI
+            if (sender === 'ai') {
+                const formattedMessage = formatAIResponse(message);
+                messageDiv.innerHTML = `<strong>${senderName}:</strong> ${formattedMessage}`;
+                
+                // Add copy button for AI messages
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = '📋 Copy';
+                copyButton.onclick = () => copyAIMessage(messageDiv);
+                messageDiv.appendChild(copyButton);
+            } else {
+                messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            }
             
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
