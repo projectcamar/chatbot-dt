@@ -163,6 +163,68 @@
             background: #28a745;
         }
 
+        /* Table formatting styles */
+        .ai-message table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.9em;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .ai-message th {
+            background: #0066CB;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #0052a3;
+        }
+
+        .ai-message td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .ai-message tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .ai-message tr:hover {
+            background: #e3f2fd;
+        }
+
+        .ai-message tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Mobile table responsiveness */
+        @media screen and (max-width: 768px) {
+            .ai-message table {
+                font-size: 0.8em;
+            }
+            
+            .ai-message th,
+            .ai-message td {
+                padding: 8px 6px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .ai-message table {
+                font-size: 0.75em;
+            }
+            
+            .ai-message th,
+            .ai-message td {
+                padding: 6px 4px;
+            }
+        }
+
         .input-group {
             display: flex;
             gap: 12px;
@@ -841,6 +903,9 @@
 
         // Format AI response text
         function formatAIResponse(text) {
+            // First, handle markdown tables before other formatting
+            text = formatMarkdownTables(text);
+            
             // Convert markdown bold (**text**) to HTML bold
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
@@ -864,6 +929,78 @@
             text = `<p>${text}</p>`;
             
             return text;
+        }
+
+        // Format markdown tables to HTML tables
+        function formatMarkdownTables(text) {
+            // Match markdown table pattern
+            const tableRegex = /(\|.*\|(?:\s*\n\|.*\|)*)/g;
+            
+            return text.replace(tableRegex, (match) => {
+                const lines = match.trim().split('\n').filter(line => line.trim());
+                
+                if (lines.length < 2) return match; // Need at least header and separator
+                
+                // Parse header row
+                const headerCells = lines[0].split('|').slice(1, -1).map(cell => cell.trim());
+                
+                // Check if second line is a separator (contains only |, -, :, and spaces)
+                const separatorLine = lines[1];
+                if (!separatorLine.match(/^\|\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|$/)) {
+                    return match; // Not a valid table separator
+                }
+                
+                // Parse data rows
+                const dataRows = lines.slice(2).map(line => 
+                    line.split('|').slice(1, -1).map(cell => cell.trim())
+                );
+                
+                // Ensure all rows have the same number of columns as header
+                const maxColumns = headerCells.length;
+                const normalizedDataRows = dataRows.map(row => {
+                    while (row.length < maxColumns) {
+                        row.push(''); // Add empty cells if needed
+                    }
+                    return row.slice(0, maxColumns); // Trim excess columns
+                });
+                
+                // Build HTML table
+                let htmlTable = '<table>';
+                
+                // Add header
+                htmlTable += '<thead><tr>';
+                headerCells.forEach(cell => {
+                    // Escape HTML in cell content
+                    const escapedCell = cell.replace(/&/g, '&amp;')
+                                          .replace(/</g, '&lt;')
+                                          .replace(/>/g, '&gt;')
+                                          .replace(/"/g, '&quot;')
+                                          .replace(/'/g, '&#39;');
+                    htmlTable += `<th>${escapedCell}</th>`;
+                });
+                htmlTable += '</tr></thead>';
+                
+                // Add body
+                htmlTable += '<tbody>';
+                normalizedDataRows.forEach(row => {
+                    htmlTable += '<tr>';
+                    row.forEach(cell => {
+                        // Escape HTML in cell content
+                        const escapedCell = cell.replace(/&/g, '&amp;')
+                                              .replace(/</g, '&lt;')
+                                              .replace(/>/g, '&gt;')
+                                              .replace(/"/g, '&quot;')
+                                              .replace(/'/g, '&#39;');
+                        htmlTable += `<td>${escapedCell}</td>`;
+                    });
+                    htmlTable += '</tr>';
+                });
+                htmlTable += '</tbody>';
+                
+                htmlTable += '</table>';
+                
+                return htmlTable;
+            });
         }
 
         // Copy AI message content to clipboard
@@ -1135,6 +1272,18 @@
                     }
                 });
             });
+        }
+
+        // Test function for table formatting (can be called from browser console)
+        function testTableFormatting() {
+            const testTable = `| No. | Informasi | Data |
+|-----|-----------|------|
+| 1. | Merek Produk | 43 merek |
+| 2. | Toko Penjualan | 3,2 juta toko |
+| 3. | Pendapatan 2023 | IDR 38,6 triliun |
+| 4. | Kapitalisasi Pasar | #12 di IDX |`;
+            
+            addMessageToChat(testTable, 'ai');
         }
 
         // Initialize mobile features
