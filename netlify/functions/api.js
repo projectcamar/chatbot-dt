@@ -49,6 +49,44 @@ app.get('/api/master-data', (req, res) => {
     res.json(data);
 });
 
+// Get master data batch
+app.get('/api/master-data/batch/:batchNumber', (req, res) => {
+    try {
+        const batchNumber = parseInt(req.params.batchNumber) || 1;
+        const masterData = loadMasterData();
+        const content = masterData.content || '';
+        
+        if (!content) {
+            return res.json({ success: true, data: { content: 'Tidak ada data tersimpan', batch: 1, totalBatches: 1 } });
+        }
+        
+        const chunks = content.split('\n');
+        const chunkSize = 100;
+        const totalBatches = Math.ceil(chunks.length / chunkSize);
+        
+        if (batchNumber < 1 || batchNumber > totalBatches) {
+            return res.status(400).json({ success: false, error: 'Invalid batch number' });
+        }
+        
+        const startIndex = (batchNumber - 1) * chunkSize;
+        const endIndex = Math.min(startIndex + chunkSize, chunks.length);
+        const batchContent = chunks.slice(startIndex, endIndex).join('\n');
+        
+        res.json({ 
+            success: true, 
+            data: { 
+                content: `[BATCH ${batchNumber} dari ${totalBatches} batch]\n${batchContent}`,
+                batch: batchNumber,
+                totalBatches: totalBatches,
+                totalLines: chunks.length
+            } 
+        });
+    } catch (error) {
+        console.error('Error loading master data batch:', error);
+        res.status(500).json({ success: false, error: 'Failed to load master data batch' });
+    }
+});
+
 app.post('/api/master-data', (req, res) => {
     console.log('POST /api/master-data called');
     console.log('Request body:', req.body);
@@ -98,9 +136,20 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-        // Load master data
+        // Load master data with batching
         const masterData = loadMasterData();
         let contextData = masterData.content || 'Tidak ada data tersimpan';
+        
+        // Implement batching for large master data
+        if (contextData && contextData.length > 50000) { // If content is larger than 50KB
+            // Split content into chunks
+            const chunks = contextData.split('\n');
+            const chunkSize = 100; // Process 100 lines at a time
+            const firstChunk = chunks.slice(0, chunkSize).join('\n');
+            
+            contextData = `[BATCH 1 dari ${Math.ceil(chunks.length / chunkSize)} batch]\n${firstChunk}`;
+            contextData += `\n\n[CATATAN: Master data berisi ${chunks.length} baris. Menampilkan ${chunkSize} baris pertama. Jika informasi yang dicari tidak ditemukan, silakan tanyakan dengan lebih spesifik atau minta untuk mencari di batch berikutnya.]`;
+        }
         
         // Prepare conversation history
         const messages = [

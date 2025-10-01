@@ -861,6 +861,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAdminModal()">Tutup</button>
+                <button class="btn btn-info" onclick="loadNextBatch()" id="loadBatchBtn" style="display: none;">📄 Load Batch Berikutnya</button>
                 <button class="btn btn-primary" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan Data</button>
             </div>
         </div>
@@ -1239,6 +1240,26 @@
                     updateDataPreview();
                     // Save to session
                     saveSession();
+                    
+                    // Check if batching is needed
+                    if (currentMasterData && currentMasterData.length > 50000) {
+                        // Get batch info
+                        const lines = currentMasterData.split('\n').length;
+                        totalBatches = Math.ceil(lines / 100);
+                        currentBatch = 1;
+                        
+                        // Show load batch button if there are more batches
+                        const loadBatchBtn = document.getElementById('loadBatchBtn');
+                        if (totalBatches > 1) {
+                            loadBatchBtn.style.display = 'inline-block';
+                            loadBatchBtn.textContent = `📄 Load Batch 2/${totalBatches}`;
+                        } else {
+                            loadBatchBtn.style.display = 'none';
+                        }
+                    } else {
+                        // Hide load batch button for small data
+                        document.getElementById('loadBatchBtn').style.display = 'none';
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading master data:', error);
@@ -1251,6 +1272,61 @@
                         updateDataPreview();
                     }
                 });
+        }
+
+        // Load master data batch
+        async function loadMasterDataBatch(batchNumber = 1) {
+            try {
+                const response = await fetch(`/api/master-data/batch/${batchNumber}`);
+                const data = await response.json();
+                if (data.success) {
+                    return data.data;
+                } else {
+                    console.error('Failed to load master data batch:', data.error);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error loading master data batch:', error);
+                return null;
+            }
+        }
+
+        // Load next batch of master data
+        let currentBatch = 1;
+        let totalBatches = 1;
+        
+        async function loadNextBatch() {
+            if (currentBatch >= totalBatches) {
+                showNotification('✅ Semua batch sudah dimuat!', 'success');
+                return;
+            }
+            
+            currentBatch++;
+            const batchData = await loadMasterDataBatch(currentBatch);
+            
+            if (batchData) {
+                // Append to current master data
+                const currentData = document.getElementById('masterData').value;
+                document.getElementById('masterData').value = currentData + '\n\n' + batchData.content;
+                currentMasterData = document.getElementById('masterData').value;
+                updateDataPreview();
+                
+                // Update batch info
+                totalBatches = batchData.totalBatches;
+                
+                // Show/hide load batch button
+                const loadBatchBtn = document.getElementById('loadBatchBtn');
+                if (currentBatch < totalBatches) {
+                    loadBatchBtn.style.display = 'inline-block';
+                    loadBatchBtn.textContent = `📄 Load Batch ${currentBatch + 1}/${totalBatches}`;
+                } else {
+                    loadBatchBtn.style.display = 'none';
+                }
+                
+                showNotification(`✅ Batch ${currentBatch}/${totalBatches} berhasil dimuat!`, 'success');
+            } else {
+                showNotification('❌ Gagal memuat batch berikutnya', 'error');
+            }
         }
 
         // Initialize data from localStorage (for admin)
