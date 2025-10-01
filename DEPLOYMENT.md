@@ -11,7 +11,7 @@
 ### 1. Buat `.env` file di root project:
 ```bash
 # OpenAI API Configuration
-OPENAI_API_KEY=sk-proj-your-api-key-here
+OPENAI_API_KEY=your-code-here
 
 # Server Configuration
 PORT=3000
@@ -67,7 +67,7 @@ git push -u origin main
    - Go to Site settings → Environment variables
    - Add these variables:
      ```
-     OPENAI_API_KEY = sk-proj-your-api-key-here
+     OPENAI_API_KEY = your-code-here
      ADMIN_UNLOCK_CODE = ugi354
      CORS_ORIGIN = https://your-app-name.netlify.app
      ```

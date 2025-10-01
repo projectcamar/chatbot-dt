@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .chat-section {
+            flex: 2;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-section {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .chat-container {
+            flex: 1;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 400px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .admin-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .admin-panel h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .login-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #28a745;
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        .data-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Supply Chain AI Assistant</h1>
+            <p>AI-powered customer service untuk supply chain management</p>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-container" id="chatContainer">
+                    <div class="message ai-message">
+                        <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk Supply Chain. Saya siap membantu menjawab pertanyaan Anda tentang operasional supply chain, distribusi, dan manajemen logistik. Silakan tanyakan apa saja!
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="userInput" placeholder="Tanyakan tentang supply chain..." onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <div id="loginForm" class="login-form">
+                    <h3>🔓 Admin Unlock</h3>
+                    <div class="form-group">
+                        <label for="adminCode">Unlock Code:</label>
+                        <input type="password" id="adminCode" placeholder="Masukkan unlock code" onkeypress="handleUnlockKeyPress(event)">
+                    </div>
+                    <button class="btn btn-primary" onclick="unlockAdmin()" style="width: 100%;">🔓 Unlock Admin</button>
+                </div>
+
+                <div id="adminPanel" class="admin-panel hidden">
+                    <h3>⚙️ Admin Panel</h3>
+                    <p><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong></p>
+                    
+                    <div class="form-group">
+                        <label for="masterData">📋 Master Data & Knowledge Base:</label>
+                        <textarea id="masterData" style="height: 300px;" placeholder="Paste semua data di sini (Ctrl+V):&#10;&#10;Contoh format:&#10;=== INFORMASI PERUSAHAAN ===&#10;Nama: PT Supply Chain Indonesia&#10;Visi: Menjadi leader di industri supply chain...&#10;&#10;=== DATA SUPPLY CHAIN ===&#10;Proses distribusi: 1. Penerimaan barang dari supplier...&#10;&#10;=== FAQ & PANDUAN ===&#10;Q: Bagaimana cara tracking shipment?&#10;A: Bisa melalui portal customer...&#10;&#10;=== INFORMASI KONTAK ===&#10;Email: info@company.com&#10;Telp: 021-1234567&#10;Jam operasional: Senin-Jumat 08:00-17:00"></textarea>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveData()" style="width: 100%; margin-bottom: 10px;">💾 Simpan Data</button>
+                    <button class="btn btn-secondary" onclick="logoutAdmin()" style="width: 100%;">🔒 Lock Admin</button>
+
+                    <div class="data-preview" id="dataPreview">
+                        <strong>📊 Preview Data:</strong><br>
+                        <div id="previewContent">Belum ada data tersimpan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Admin unlock trigger (internal use only)
+        const ADMIN_UNLOCK_CODE = 'ugi354';
+
+        let isAdminLoggedIn = false;
+        let conversationHistory = [];
+        let socket = null;
+        let currentMasterData = '';
+
+        // Initialize Socket.io connection
+        function initializeSocket() {
+            socket = io();
+            
+            // Listen for master data updates
+            socket.on('masterDataUpdated', (data) => {
+                currentMasterData = data.content || '';
+                updateDataPreview();
+                
+                // Show notification to users
+                if (!isAdminLoggedIn) {
+                    addMessageToChat('📢 Master data telah diperbarui oleh admin. AI akan menggunakan data terbaru untuk menjawab pertanyaan Anda.', 'ai');
+                }
+            });
+
+            // Load initial master data
+            fetch('/api/master-data')
+                .then(response => response.json())
+                .then(data => {
+                    currentMasterData = data.content || '';
+                    updateDataPreview();
+                })
+                .catch(error => {
+                    console.error('Error loading master data:', error);
+                });
+        }
+
+        // Initialize data from localStorage (for admin)
+        function initializeData() {
+            const savedData = localStorage.getItem('supplyChainData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                document.getElementById('masterData').value = data.masterData || '';
+                updateDataPreview();
+            }
+        }
+
+        // Unlock admin panel
+        function unlockAdmin() {
+            const unlockCode = document.getElementById('adminCode').value;
+
+            if (unlockCode === ADMIN_UNLOCK_CODE) {
+                isAdminLoggedIn = true;
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                initializeData();
+            } else {
+                alert('❌ Unlock code salah!');
+            }
+        }
+
+        // Handle Enter key for unlock
+        function handleUnlockKeyPress(event) {
+            if (event.key === 'Enter') {
+                unlockAdmin();
+            }
+        }
+
+        // Lock admin panel
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('adminCode').value = '';
+        }
+
+        // Save data to server (admin only)
+        async function saveData() {
+            const masterDataContent = document.getElementById('masterData').value;
+            
+            if (!masterDataContent.trim()) {
+                alert('Master data tidak boleh kosong!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/master-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: masterDataContent,
+                        updatedBy: 'ugi'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Save to localStorage as backup
+                    const data = {
+                        masterData: masterDataContent,
+                        lastUpdated: new Date().toLocaleString()
+                    };
+                    localStorage.setItem('supplyChainData', JSON.stringify(data));
+                    
+                    updateDataPreview();
+                    alert('✅ Master data berhasil disimpan dan disinkronkan ke semua user!');
+                } else {
+                    alert('❌ Gagal menyimpan data: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('❌ Gagal menyimpan data. Periksa koneksi server.');
+            }
+        }
+
+        // Update data preview
+        function updateDataPreview() {
+            let preview = '';
+            
+            if (currentMasterData) {
+                preview += `📋 Master Data: ${currentMasterData.substring(0, 200)}...<br>`;
+                preview += `<br><small>Status: ${isAdminLoggedIn ? 'Admin Mode' : 'Visitor Mode'}</small>`;
+            } else {
+                preview = 'Belum ada data tersimpan';
+            }
+            
+            document.getElementById('previewContent').innerHTML = preview;
+        }
+
+        // Handle Enter key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send message to AI
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (!message) return;
+
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            userInput.value = '';
+
+            // Show loading indicator
+            const loadingId = addLoadingMessage();
+
+            try {
+                // Call backend API for AI chat
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversationHistory: conversationHistory
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove loading message
+                removeLoadingMessage(loadingId);
+
+                if (data.success) {
+                    const aiResponse = data.response;
+                    addMessageToChat(aiResponse, 'ai');
+                    
+                    // Add to conversation history
+                    conversationHistory.push(
+                        { role: "user", content: message },
+                        { role: "assistant", content: aiResponse }
+                    );
+
+                    // Keep only last 10 exchanges to manage token usage
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
+                    }
+                } else {
+                    addMessageToChat('Maaf, terjadi kesalahan dalam memproses permintaan Anda. Silakan coba lagi.', 'ai');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                removeLoadingMessage(loadingId);
+                addMessageToChat('Maaf, terjadi kesalahan koneksi. Pastikan koneksi internet Anda stabil dan coba lagi.', 'ai');
+            }
+        }
+
+        // Add message to chat container
+        function addMessageToChat(message, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const senderName = sender === 'user' ? 'Anda' : 'AI Assistant';
+            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add loading message
+        function addLoadingMessage() {
+            const chatContainer = document.getElementById('chatContainer');
+            const loadingDiv = document.createElement('div');
+            const loadingId = 'loading-' + Date.now();
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'message ai-message';
+            loadingDiv.innerHTML = '<strong>AI Assistant:</strong> <span class="loading"></span> Sedang memproses...';
+            
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return loadingId;
+        }
+
+        // Remove loading message
+        function removeLoadingMessage(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocket();
+            initializeData();
+        });
+    </script>
+</body>
+</html>
