@@ -1353,15 +1353,29 @@
                 // Set font
                 doc.setFont('helvetica');
                 
+                // Add logo using base64 or direct image loading
+                try {
+                    // Load logo and add to PDF
+                    const logoResponse = await fetch('assets/Unilever_logo-onlytext.png');
+                    const logoBlob = await logoResponse.blob();
+                    const logoArrayBuffer = await logoBlob.arrayBuffer();
+                    const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoArrayBuffer)));
+                    
+                    // Add logo to PDF
+                    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 15, 30, 15);
+                } catch (error) {
+                    console.log('Logo not available, using text header');
+                }
+                
                 // Add header
                 doc.setFontSize(16);
                 doc.setTextColor(0, 102, 203); // Unilever blue
-                doc.text('AI Assistant Response', 20, 30);
+                doc.text('AI Assistant Response', 60, 30);
                 
                 // Add date
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
-                doc.text(`Generated on: ${new Date().toLocaleString('id-ID')}`, 20, 40);
+                doc.text(`Generated on: ${new Date().toLocaleString('id-ID')}`, 60, 40);
                 
                 // Add line separator
                 doc.setDrawColor(0, 102, 203);
