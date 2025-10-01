@@ -617,7 +617,7 @@
                 </div>
 
                 <div id="adminPanel" class="hidden">
-                    <p><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong></p>
+                    <p><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
                     
                     <div class="form-group">
                         <label for="masterData">📋 DT Internal Master Data:</label>
@@ -654,7 +654,8 @@
         function saveSession() {
             const sessionData = {
                 timestamp: Date.now(),
-                accessGranted: true
+                accessGranted: true,
+                isAdmin: isAdminLoggedIn
             };
             localStorage.setItem('dt_session', JSON.stringify(sessionData));
         }
@@ -671,14 +672,19 @@
                 if (sessionAge < SESSION_DURATION) {
                     // Session masih valid
                     isAccessGranted = true;
+                    isAdminLoggedIn = session.isAdmin || false;
                     return true;
                 } else {
                     // Session expired
                     localStorage.removeItem('dt_session');
+                    isAccessGranted = false;
+                    isAdminLoggedIn = false;
                     return false;
                 }
             } catch (error) {
                 localStorage.removeItem('dt_session');
+                isAccessGranted = false;
+                isAdminLoggedIn = false;
                 return false;
             }
         }
@@ -686,6 +692,7 @@
         function clearSession() {
             localStorage.removeItem('dt_session');
             isAccessGranted = false;
+            isAdminLoggedIn = false;
         }
 
         function logoutSession() {
@@ -707,7 +714,8 @@
                     if (remainingTime > 0) {
                         const hours = Math.floor(remainingTime / (1000 * 60 * 60));
                         const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-                        document.getElementById('sessionInfo').textContent = `Session expires in: ${hours}h ${minutes}m`;
+                        const adminStatus = session.isAdmin ? ' (Admin Mode)' : '';
+                        document.getElementById('sessionInfo').textContent = `Session expires in: ${hours}h ${minutes}m${adminStatus}`;
                     } else {
                         document.getElementById('sessionInfo').textContent = 'Session expired';
                     }
@@ -716,6 +724,18 @@
                 }
             } else {
                 document.getElementById('sessionInfo').textContent = '';
+            }
+        }
+
+        function updateAdminStatus() {
+            // Update admin button visibility
+            const adminButton = document.querySelector('button[onclick="openAdminModal()"]');
+            if (isAdminLoggedIn) {
+                adminButton.textContent = 'Admin Mode ✓';
+                adminButton.style.background = '#28a745';
+            } else {
+                adminButton.textContent = 'Edit Master Data';
+                adminButton.style.background = '#123062';
             }
         }
 
@@ -815,10 +835,12 @@
 
             if (unlockCode === ADMIN_UNLOCK_CODE) {
                 isAdminLoggedIn = true;
+                saveSession(); // Save admin status to session
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('saveBtn').style.display = 'inline-block';
                 initializeData();
+                updateAdminStatus();
             } else {
                 alert('❌ Unlock code salah!');
             }
@@ -869,6 +891,11 @@
                 // Session valid, hide password modal
                 document.getElementById('passwordModal').style.display = 'none';
                 document.getElementById('userInput').focus();
+                
+                // Update admin status if logged in as admin
+                if (isAdminLoggedIn) {
+                    updateAdminStatus();
+                }
             } else {
                 // No valid session, show password modal
                 document.getElementById('passwordModal').style.display = 'block';
