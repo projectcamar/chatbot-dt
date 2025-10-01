@@ -341,6 +341,14 @@
                 font-size: 0.8em;
             }
 
+            .header img {
+                height: 32px !important;
+            }
+
+            .modal-header img {
+                height: 20px !important;
+            }
+
             .btn-edit {
                 font-size: 0.7em;
                 padding: 6px 12px;
@@ -460,6 +468,14 @@
                 font-size: 1.2em;
             }
 
+            .header img {
+                height: 28px !important;
+            }
+
+            .modal-header img {
+                height: 18px !important;
+            }
+
             .main-content {
                 padding: 12px;
             }
@@ -573,7 +589,10 @@
         <div id="passwordModal" class="modal" style="display: block;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>🔐 DT Internal Masterdata Access</h3>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="assets/Unilever_logo-onlytext.png" alt="Unilever" style="height: 24px; width: auto;">
+                        <h3 style="margin: 0;">🔐 DT Internal Masterdata Access</h3>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <p style="text-align: center; margin-bottom: 20px; color: #666;">
@@ -595,8 +614,13 @@
         </div>
 
         <div class="header">
-            <h1>🤖 DT Internal Masterdata</h1>
-            <p>AI-powered data management untuk internal team</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px;">
+                <img src="assets/unilever-blue-transparent-withtextunderlogo.png" alt="Unilever" style="height: 40px; width: auto;">
+                <div>
+                    <h1 style="margin: 0; font-size: 1.6em;">🤖 DT Internal Masterdata</h1>
+                    <p style="margin: 4px 0 0 0; font-size: 0.85em;">AI-powered data management untuk internal team</p>
+                </div>
+            </div>
             <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 12px;">
                 <button class="btn btn-edit" onclick="openAdminModal()">Edit Master Data</button>
                 <button class="btn btn-secondary" onclick="logoutSession()" style="font-size: 0.7em; padding: 6px 12px;">Logout</button>
@@ -621,13 +645,16 @@
         </div>
     </div>
 
-    <!-- Admin Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>⚙️ Admin Panel</h3>
-                <span class="close" onclick="closeAdminModal()">&times;</span>
-            </div>
+        <!-- Admin Modal -->
+        <div id="adminModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="assets/Unilever_logo-onlytext.png" alt="Unilever" style="height: 24px; width: auto;">
+                        <h3 style="margin: 0;">⚙️ Admin Panel</h3>
+                    </div>
+                    <span class="close" onclick="closeAdminModal()">&times;</span>
+                </div>
             <div class="modal-body">
                 <div id="loginForm">
                     <div class="form-group">
