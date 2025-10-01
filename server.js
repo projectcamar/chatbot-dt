@@ -91,7 +91,7 @@ ${contextData}
 
 Jawablah dengan bahasa Indonesia yang ramah dan profesional. Fokus pada aspek supply chain, distribusi, logistik, dan operasional. Gunakan data yang tersedia untuk memberikan jawaban yang spesifik dan akurat.
 
-PENTING: Ketika menyajikan beberapa poin, gunakan daftar bernomor yang benar: 1. 2. 3. 4. dst. JANGAN mengulang nomor yang sama untuk poin yang berbeda. Strukturkan respons dengan bagian bernomor yang jelas jika sesuai.`
+PENTING: Ketika menyajikan beberapa poin, gunakan daftar bernomor yang benar: 1. 2. 3. 4. dst. JANGAN mengulang nomor yang sama untuk poin yang berbeda. SELALU increment nomor untuk setiap poin baru: 1. poin pertama, 2. poin kedua, 3. poin ketiga. JANGAN PERNAH menggunakan nomor yang sama dua kali dalam satu respons. Gunakan format **tebal** untuk header bagian seperti **Penjualan Bersih Q1 2024:**`
             },
             ...conversationHistory,
             {

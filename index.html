@@ -134,6 +134,20 @@
             font-weight: 600;
         }
 
+        .ai-message h3 {
+            color: #0066CB;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin: 12px 0 8px 0;
+        }
+
+        .ai-message h4 {
+            color: #0066CB;
+            font-weight: 600;
+            font-size: 1em;
+            margin: 10px 0 6px 0;
+        }
+
         .ai-message {
             position: relative;
         }
@@ -943,8 +957,11 @@
             // First, handle markdown tables before other formatting
             text = formatMarkdownTables(text);
             
-            // Convert markdown bold (**text**) to HTML bold
+            // Convert markdown bold (**text**) to HTML bold with better styling
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert section headers to h3 tags for better styling
+            text = text.replace(/(\d+\.\s+\*\*([^*]+)\*\*)/g, '<h3>$-</h3>');
             
             // Convert numbered lists (1. 2. 3.) to proper HTML lists
             text = text.replace(/(\d+\.\s+[^\n]+(?:\n(?!(?:\d+\.|\n))[^\n]+)*)/g, (match) => {
