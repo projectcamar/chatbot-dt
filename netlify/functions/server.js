@@ -2,6 +2,8 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 
@@ -16,15 +18,44 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// In-memory storage untuk master data
-let masterData = {
-    content: '',
-    lastUpdated: null,
-    updatedBy: ''
-};
+// File path untuk persistent storage
+const DATA_FILE = path.join(__dirname, 'master-data.json');
+
+// Load master data from file
+function loadMasterData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = fs.readFileSync(DATA_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading master data:', error);
+    }
+    return {
+        content: '',
+        lastUpdated: null,
+        updatedBy: ''
+    };
+}
+
+// Save master data to file
+function saveMasterData(data) {
+    try {
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error saving master data:', error);
+        return false;
+    }
+}
+
+// Load initial data
+let masterData = loadMasterData();
 
 // Routes
 app.get('/.netlify/functions/server/api/master-data', (req, res) => {
+    // Reload data from file setiap request
+    masterData = loadMasterData();
     res.json(masterData);
 });
 
@@ -35,17 +66,26 @@ app.post('/.netlify/functions/server/api/master-data', (req, res) => {
         return res.status(400).json({ error: 'Content is required' });
     }
 
-    masterData = {
+    const newData = {
         content: content,
         lastUpdated: new Date().toISOString(),
         updatedBy: updatedBy || 'admin'
     };
 
-    res.json({ 
-        success: true, 
-        message: 'Master data updated successfully',
-        data: masterData 
-    });
+    // Save to file
+    if (saveMasterData(newData)) {
+        masterData = newData;
+        res.json({ 
+            success: true, 
+            message: 'Master data updated and saved successfully',
+            data: masterData 
+        });
+    } else {
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to save master data' 
+        });
+    }
 });
 
 // Chat with AI endpoint

@@ -58,17 +58,12 @@ git push -u origin main
    - Choose "GitHub"
    - Select your repository: `supply-chain-chatbot`
 
-3. **Build Settings** (IMPORTANT: Set manually in Netlify UI)
-   - **Build command**: (leave EMPTY)
-   - **Publish directory**: `.` (root directory)
+3. **Build Settings**
+   - **Build command**: `npm run build`
+   - **Publish directory**: `public`
    - **Functions directory**: `netlify/functions`
    
-   ⚠️ **CRITICAL**: Netlify UI might override netlify.toml. 
-   Go to Site Settings → Build & Deploy → Build Settings
-   and manually set:
-   - Build command: (empty)
-   - Publish directory: .
-   - Functions directory: netlify/functions
+   ✅ **AUTOMATIC**: Build script akan copy file ke folder `public`
 
 4. **Environment Variables**
    - Go to Site settings → Environment variables
