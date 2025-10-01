@@ -880,6 +880,8 @@
         let conversationHistory = [];
         let socket = null;
         let currentMasterData = '';
+        let customWelcomeMessage = null;
+        let lastMasterDataHash = null;
 
         // Chat history management
         const CHAT_HISTORY_KEY = 'dt_chat_history';
@@ -1100,7 +1102,9 @@
                 timestamp: Date.now(),
                 accessGranted: true,
                 isAdmin: isAdminLoggedIn,
-                masterData: currentMasterData
+                masterData: currentMasterData,
+                customWelcomeMessage: customWelcomeMessage,
+                lastMasterDataHash: lastMasterDataHash
             };
             localStorage.setItem('dt_session', JSON.stringify(sessionData));
         }
@@ -1119,6 +1123,14 @@
                     isAccessGranted = true;
                     isAdminLoggedIn = session.isAdmin || false;
                     currentMasterData = session.masterData || '';
+                    customWelcomeMessage = session.customWelcomeMessage || null;
+                    lastMasterDataHash = session.lastMasterDataHash || null;
+                    
+                    // Update welcome message if available
+                    if (customWelcomeMessage) {
+                        updateWelcomeMessage();
+                    }
+                    
                     return true;
                 } else {
                     // Session expired
@@ -1353,11 +1365,73 @@
                     updateDataPreview();
                     saveSession();
                     
+                    // Generate new custom welcome message
+                    await generateCustomWelcomeMessage();
+                    
                     showNotification('✅ Data berhasil dimuat dari server', 'success');
                 } catch (error) {
                     console.error('Error force loading from server:', error);
                     showNotification('❌ Gagal memuat data dari server', 'error');
                 }
+            }
+        }
+
+        // Generate custom welcome message based on master data
+        async function generateCustomWelcomeMessage() {
+            if (!currentMasterData || currentMasterData.trim() === '') {
+                customWelcomeMessage = null;
+                return;
+            }
+
+            // Check if master data has changed
+            const currentHash = await generateHash(currentMasterData);
+            if (currentHash === lastMasterDataHash && customWelcomeMessage) {
+                console.log('Master data unchanged, using cached welcome message');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Buatkan welcome message yang personal dan informatif untuk AI Assistant DT Internal Masterdata berdasarkan data berikut:\n\n${currentMasterData}\n\nBuatkan welcome message yang:\n1. Menyebutkan jenis data yang tersedia\n2. Menyebutkan topik-topik yang bisa ditanyakan\n3. Memberikan contoh pertanyaan yang relevan\n4. Tetap profesional dan ramah\n5. Maksimal 3-4 kalimat\n6. Gunakan format: "AI Assistant: [welcome message]"`
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    customWelcomeMessage = data.response;
+                    lastMasterDataHash = currentHash;
+                    console.log('Custom welcome message generated:', customWelcomeMessage);
+                    
+                    // Update welcome message in chat
+                    updateWelcomeMessage();
+                    saveSession();
+                } else {
+                    console.error('Failed to generate custom welcome message');
+                }
+            } catch (error) {
+                console.error('Error generating custom welcome message:', error);
+            }
+        }
+
+        // Generate hash for master data to detect changes
+        async function generateHash(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Update welcome message in chat
+        function updateWelcomeMessage() {
+            const welcomeElement = document.querySelector('.ai-message');
+            if (welcomeElement && customWelcomeMessage) {
+                welcomeElement.innerHTML = formatAIResponse(customWelcomeMessage);
             }
         }
 
