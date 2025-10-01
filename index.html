@@ -2091,6 +2091,16 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             // Remove excessive line breaks
             formatted = formatted.replace(/\n{3,}/g, '\n\n'); // Max 2 line breaks
             
+            // BAN ALL * and # symbols completely for PDF - ULTRA CLEAN
+            formatted = formatted.replace(/\*/g, ''); // Remove ALL asterisks
+            formatted = formatted.replace(/#/g, ''); // Remove ALL hash symbols
+            formatted = formatted.replace(/_/g, ''); // Remove ALL underscores
+            formatted = formatted.replace(/`/g, ''); // Remove ALL backticks
+            formatted = formatted.replace(/\[/g, ''); // Remove ALL opening brackets
+            formatted = formatted.replace(/\]/g, ''); // Remove ALL closing brackets
+            formatted = formatted.replace(/\(/g, ''); // Remove ALL opening parentheses
+            formatted = formatted.replace(/\)/g, ''); // Remove ALL closing parentheses
+            
             // Clean up the final content
             formatted = formatted.trim();
             
