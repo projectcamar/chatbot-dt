@@ -1,5 +1,6 @@
 # API redirects to Netlify Functions (must be first)
-/api/*    /.netlify/functions/server/api/:splat    200
+/api/master-data    /.netlify/functions/master-data    200
+/api/chat    /.netlify/functions/chat    200
 
 # Redirect all other requests to index.html for SPA
 /*    /index.html   200

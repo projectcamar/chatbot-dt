@@ -14,8 +14,13 @@
 
 # API redirects ke functions (must be first)
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/api/:splat"
+  from = "/api/master-data"
+  to = "/.netlify/functions/master-data"
+  status = 200
+
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
   status = 200
 
 # Redirect rules untuk SPA

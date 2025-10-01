@@ -303,13 +303,21 @@
         // Load master data from API
         function loadMasterData() {
             fetch('/api/master-data')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     currentMasterData = data.content || '';
                     updateDataPreview();
                 })
                 .catch(error => {
                     console.error('Error loading master data:', error);
+                    // Fallback to empty data
+                    currentMasterData = '';
+                    updateDataPreview();
                 });
         }
 
