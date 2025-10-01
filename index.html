@@ -862,6 +862,7 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAdminModal()">Tutup</button>
                     <button class="btn btn-info" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;">🔍 RAG Status</button>
+                    <button class="btn btn-warning" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Load from Server</button>
                 <button class="btn btn-primary" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan Data</button>
             </div>
         </div>
@@ -872,7 +873,7 @@
         // Access codes (internal use only)
         const ACCESS_PASSWORD = 'dtunilever2025';
         const ADMIN_UNLOCK_CODE = 'ugi354';
-        const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        const SESSION_DURATION = 365 * 24 * 60 * 60 * 1000; // 365 days (effectively permanent)
 
         let isAccessGranted = false;
         let isAdminLoggedIn = false;
@@ -1224,7 +1225,7 @@
             loadMasterData();
         }
         
-        // Load master data from API
+        // Load master data from API - PERMANENT DATA PROTECTION
         function loadMasterData() {
             fetch('/api/master-data')
                 .then(response => {
@@ -1234,9 +1235,21 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Always update current master data from server
-                    currentMasterData = data.content || '';
-                    document.getElementById('masterData').value = currentMasterData;
+                    // Only update if current data is empty (protect existing data)
+                    const serverData = data.content || '';
+                    const currentData = document.getElementById('masterData').value;
+                    
+                    if (!currentData || currentData.trim() === '') {
+                        // Only load from server if local data is empty
+                        currentMasterData = serverData;
+                        document.getElementById('masterData').value = currentMasterData;
+                        console.log('Loaded master data from server (local was empty)');
+                    } else {
+                        // Keep existing data, don't overwrite
+                        currentMasterData = currentData;
+                        console.log('Preserved existing master data (not overwriting)');
+                    }
+                    
                     updateDataPreview();
                     // Save to session
                     saveSession();
@@ -1246,6 +1259,11 @@
                         document.getElementById('ragStatusBtn').style.display = 'inline-block';
                     } else {
                         document.getElementById('ragStatusBtn').style.display = 'none';
+                    }
+                    
+                    // Always show force load button for admin
+                    if (isAdminLoggedIn) {
+                        document.getElementById('forceLoadBtn').style.display = 'inline-block';
                     }
                 })
                 .catch(error => {
@@ -1316,6 +1334,30 @@
             } catch (error) {
                 console.error('Error showing RAG status:', error);
                 showNotification('❌ Error dalam RAG status', 'error');
+            }
+        }
+
+        // Force load from server (overwrite local data)
+        async function forceLoadFromServer() {
+            if (confirm('⚠️ Ini akan mengganti data master yang ada dengan data dari server. Lanjutkan?')) {
+                try {
+                    const response = await fetch('/api/master-data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    // Force overwrite local data
+                    currentMasterData = data.content || '';
+                    document.getElementById('masterData').value = currentMasterData;
+                    updateDataPreview();
+                    saveSession();
+                    
+                    showNotification('✅ Data berhasil dimuat dari server', 'success');
+                } catch (error) {
+                    console.error('Error force loading from server:', error);
+                    showNotification('❌ Gagal memuat data dari server', 'error');
+                }
             }
         }
 
@@ -1443,16 +1485,37 @@
                 
                 // Add logo using base64 or direct image loading
                 try {
-                    // Load logo and add to PDF
-                    const logoResponse = await fetch('assets/unilever-2-logo-png-transparent.png');
+                    // Try multiple logo options
+                    let logoResponse;
+                    let logoFormat = 'PNG';
+                    
+                    try {
+                        logoResponse = await fetch('assets/unilever-2-logo-png-transparent.png');
+                        if (!logoResponse.ok) throw new Error('First logo failed');
+                    } catch (e) {
+                        try {
+                            logoResponse = await fetch('assets/Unilever_logo-onlytext.png');
+                            if (!logoResponse.ok) throw new Error('Second logo failed');
+                        } catch (e2) {
+                            logoResponse = await fetch('assets/unilever-blue-transparent-withtextunderlogo.png');
+                            if (!logoResponse.ok) throw new Error('All logos failed');
+                        }
+                    }
+                    
                     const logoBlob = await logoResponse.blob();
                     const logoArrayBuffer = await logoBlob.arrayBuffer();
                     const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoArrayBuffer)));
                     
                     // Add logo to PDF with original size
-                    doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 15);
+                    doc.addImage(`data:image/png;base64,${logoBase64}`, logoFormat, 20, 15);
+                    console.log('Logo added successfully to PDF');
                 } catch (error) {
-                    console.log('Logo not available, using text header');
+                    console.log('All logos failed, using text header:', error);
+                    // Fallback to text header
+                    doc.setFontSize(14);
+                    doc.setFont('times', 'bold');
+                    doc.setTextColor(0, 102, 203);
+                    doc.text('UNILEVER', 20, 20);
                 }
                 
                 // Add elegant Unilever header
@@ -2140,7 +2203,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             updateSessionInfo(); // Initial update
             
             // Sync master data every 2 minutes to get latest updates
-            setInterval(loadMasterData, 2 * 60 * 1000);
+            // setInterval(loadMasterData, 2 * 60 * 1000); // Disabled for permanent data
             
             // Prevent double-tap zoom on buttons
             const buttons = document.querySelectorAll('.btn');
