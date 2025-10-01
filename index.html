@@ -397,13 +397,19 @@
                 padding: 12px 14px;
                 border-radius: 8px;
                 height: 44px;
+                flex: 1;
             }
 
             .btn {
                 padding: 12px 16px;
                 font-size: 0.9em;
                 height: 44px;
-                min-width: 80px;
+                min-width: 60px;
+            }
+
+            .input-group .btn-secondary {
+                min-width: 44px;
+                padding: 12px;
             }
 
             /* Modal Mobile Optimization */
@@ -639,6 +645,7 @@
                 <div class="input-group">
                     <input type="text" id="userInput" placeholder="Tanyakan tentang data internal..." onkeypress="handleKeyPress(event)">
                     <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
+                    <button class="btn btn-secondary" onclick="clearChatHistory()" style="padding: 12px; font-size: 0.8em;" title="Hapus riwayat chat">🗑️</button>
                 </div>
             </div>
 
@@ -697,6 +704,69 @@
         let conversationHistory = [];
         let socket = null;
         let currentMasterData = '';
+
+        // Chat history management
+        const CHAT_HISTORY_KEY = 'dt_chat_history';
+
+        function saveChatHistory() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messages = Array.from(chatContainer.children).map(msg => ({
+                content: msg.innerHTML,
+                className: msg.className
+            }));
+            localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
+        }
+
+        function loadChatHistory() {
+            const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
+            if (savedHistory) {
+                try {
+                    const messages = JSON.parse(savedHistory);
+                    const chatContainer = document.getElementById('chatContainer');
+                    
+                    // Clear existing messages except welcome message
+                    const welcomeMessage = chatContainer.querySelector('.ai-message');
+                    chatContainer.innerHTML = '';
+                    
+                    // Add welcome message back
+                    if (welcomeMessage) {
+                        chatContainer.appendChild(welcomeMessage);
+                    }
+                    
+                    // Load saved messages
+                    messages.forEach(msg => {
+                        if (!msg.content.includes('AI Assistant: Halo! Saya adalah AI Assistant')) {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = msg.className;
+                            messageDiv.innerHTML = msg.content;
+                            chatContainer.appendChild(messageDiv);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading chat history:', error);
+                }
+            }
+        }
+
+        function clearChatHistory() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua riwayat chat?')) {
+                localStorage.removeItem(CHAT_HISTORY_KEY);
+                const chatContainer = document.getElementById('chatContainer');
+                
+                // Keep only welcome message
+                const welcomeMessage = chatContainer.querySelector('.ai-message');
+                chatContainer.innerHTML = '';
+                
+                if (welcomeMessage) {
+                    chatContainer.appendChild(welcomeMessage);
+                }
+                
+                // Clear conversation history for AI
+                conversationHistory = [];
+                
+                alert('✅ Riwayat chat berhasil dihapus!');
+            }
+        }
 
         // Session management functions
         function saveSession() {
@@ -959,6 +1029,9 @@
                 document.getElementById('passwordModal').style.display = 'none';
                 document.getElementById('userInput').focus();
                 
+                // Load chat history
+                loadChatHistory();
+                
                 // Update admin status if logged in as admin
                 if (isAdminLoggedIn) {
                     updateAdminStatus();
@@ -1140,6 +1213,9 @@
             
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Save chat history after adding message
+            saveChatHistory();
         }
 
         // Add loading message
