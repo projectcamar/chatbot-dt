@@ -80,6 +80,7 @@
             overflow-y: auto;
             max-height: 500px;
             background: #fafafa;
+            padding-bottom: 100px; /* Space for floating input */
         }
 
         .message {
@@ -280,6 +281,13 @@
             display: flex;
             gap: 12px;
             align-items: stretch;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 16px 24px;
+            border-top: 1px solid #e9ecef;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            z-index: 100;
         }
 
         .input-group input {
@@ -563,6 +571,7 @@
                 padding: 16px;
                 max-height: 400px;
                 border-radius: 8px;
+                padding-bottom: 80px; /* Space for floating input on mobile */
             }
 
             .message {
@@ -586,6 +595,13 @@
             .input-group {
                 flex-direction: row;
                 gap: 8px;
+                position: sticky;
+                bottom: 0;
+                padding: 12px 16px;
+                background: white;
+                border-top: 1px solid #e9ecef;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                z-index: 100;
             }
 
             .input-group input {
@@ -723,6 +739,7 @@
             .chat-container {
                 padding: 12px;
                 max-height: 350px;
+                padding-bottom: 70px; /* Space for floating input on small mobile */
             }
 
             .message {
@@ -740,6 +757,16 @@
                 max-width: 95%;
                 width: fit-content;
                 min-width: 40px;
+            }
+
+            .input-group {
+                padding: 10px 12px;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #e9ecef;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                z-index: 100;
             }
 
             .input-group input {
@@ -790,6 +817,17 @@
         @media screen and (max-height: 500px) and (orientation: landscape) {
             .chat-container {
                 max-height: 250px;
+                padding-bottom: 60px; /* Space for floating input in landscape */
+            }
+
+            .input-group {
+                padding: 8px 16px;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #e9ecef;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                z-index: 100;
             }
 
             .modal-content {
@@ -904,12 +942,12 @@
                         <input type="password" id="adminCode" placeholder="Masukkan unlock code" onkeypress="handleUnlockKeyPress(event)">
                     </div>
                     <button class="btn btn-primary" onclick="unlockAdmin()" style="width: 100%;">🔓 Unlock Admin</button>
-                    
+
                     <div class="data-preview" id="dataPreview" style="margin-top: 15px; font-size: 0.8em; padding: 8px 12px; max-height: 80px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                         <strong>📊 Preview Data:</strong>
                         <div id="previewContent" style="margin-top: 4px; font-size: 0.75em; line-height: 1.3;">Belum ada data tersimpan</div>
                     </div>
-                </div>
+                    </div>
 
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
@@ -957,9 +995,9 @@
             const messages = Array.from(chatContainer.children)
                 .filter(msg => !msg.innerHTML.includes('AI Assistant: Halo! Saya adalah AI Assistant'))
                 .map(msg => ({
-                    content: msg.innerHTML,
-                    className: msg.className
-                }));
+                content: msg.innerHTML,
+                className: msg.className
+            }));
             localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
         }
 
@@ -1321,7 +1359,7 @@
                 .then(data => {
                     // Always load from server to ensure all users have latest data
                     const serverData = data.content || '';
-                    currentMasterData = serverData;
+                        currentMasterData = serverData;
                     
                     // Update master data field if admin panel is open
                     const masterDataField = document.getElementById('masterData');
