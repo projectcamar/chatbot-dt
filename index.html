@@ -342,6 +342,13 @@
         .btn-edit:hover {
             background: #0f2750;
         }
+        
+        .btn-compact {
+            padding: 6px 10px;
+            font-size: 0.8em;
+            min-width: auto;
+            white-space: nowrap;
+        }
 
         /* Modal Styles */
         .modal {
@@ -445,8 +452,22 @@
         
         .modal-footer .button-group {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .modal-footer .btn {
+            padding: 8px 12px;
+            font-size: 0.85em;
+            min-width: auto;
+            white-space: nowrap;
+        }
+        
+        .modal-footer .btn-compact {
+            padding: 6px 10px;
+            font-size: 0.8em;
+            min-width: 60px;
         }
 
         .hidden {
@@ -625,11 +646,18 @@
 
             .modal-footer .button-group {
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
             }
 
             .modal-footer .btn {
                 width: 100%;
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+            
+            .modal-footer .btn-compact {
+                padding: 8px 12px;
+                font-size: 0.85em;
             }
             
             .modal-footer .data-preview {
@@ -896,10 +924,10 @@
             </div>
             <div class="modal-footer">
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="closeAdminModal()">Tutup</button>
-                    <button class="btn btn-info" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;">🔍 RAG Status</button>
-                    <button class="btn btn-warning" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Force Sync</button>
-                    <button class="btn btn-primary" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan Data</button>
+                    <button class="btn btn-secondary btn-compact" onclick="closeAdminModal()">Tutup</button>
+                    <button class="btn btn-info btn-compact" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;">🔍 RAG</button>
+                    <button class="btn btn-warning btn-compact" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Sync</button>
+                    <button class="btn btn-primary btn-compact" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan</button>
                 </div>
             </div>
         </div>
@@ -926,10 +954,12 @@
 
         function saveChatHistory() {
             const chatContainer = document.getElementById('chatContainer');
-            const messages = Array.from(chatContainer.children).map(msg => ({
-                content: msg.innerHTML,
-                className: msg.className
-            }));
+            const messages = Array.from(chatContainer.children)
+                .filter(msg => !msg.innerHTML.includes('AI Assistant: Halo! Saya adalah AI Assistant'))
+                .map(msg => ({
+                    content: msg.innerHTML,
+                    className: msg.className
+                }));
             localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
         }
 
@@ -940,18 +970,19 @@
                     const messages = JSON.parse(savedHistory);
                     const chatContainer = document.getElementById('chatContainer');
                     
-                    // Clear existing messages except welcome message
-                    const welcomeMessage = chatContainer.querySelector('.ai-message');
+                    // Clear existing messages completely
                     chatContainer.innerHTML = '';
                     
-                    // Add welcome message back
-                    if (welcomeMessage) {
-                        chatContainer.appendChild(welcomeMessage);
-                    }
+                    // Add welcome message first
+                    const welcomeDiv = document.createElement('div');
+                    welcomeDiv.className = 'message ai-message';
+                    welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                    chatContainer.appendChild(welcomeDiv);
                     
-                    // Load saved messages
+                    // Load saved messages (excluding welcome messages)
                     messages.forEach(msg => {
-                        if (!msg.content.includes('AI Assistant: Halo! Saya adalah AI Assistant')) {
+                        if (!msg.content.includes('AI Assistant: Halo! Saya adalah AI Assistant') && 
+                            !msg.content.includes('Data akan otomatis di-sync dari server')) {
                             const messageDiv = document.createElement('div');
                             messageDiv.className = msg.className;
                             messageDiv.innerHTML = msg.content;
@@ -979,13 +1010,13 @@
                 localStorage.removeItem(CHAT_HISTORY_KEY);
                 const chatContainer = document.getElementById('chatContainer');
                 
-                // Keep only welcome message
-                const welcomeMessage = chatContainer.querySelector('.ai-message');
+                // Clear all messages and add fresh welcome message
                 chatContainer.innerHTML = '';
                 
-                if (welcomeMessage) {
-                    chatContainer.appendChild(welcomeMessage);
-                }
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'message ai-message';
+                welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                chatContainer.appendChild(welcomeDiv);
                 
                 // Clear conversation history for AI
                 conversationHistory = [];
@@ -1486,7 +1517,8 @@
 
         // Update welcome message in chat
         function updateWelcomeMessage() {
-            const welcomeElement = document.querySelector('.ai-message');
+            const chatContainer = document.getElementById('chatContainer');
+            const welcomeElement = chatContainer.querySelector('.ai-message:first-child');
             if (welcomeElement && customWelcomeMessage) {
                 welcomeElement.innerHTML = formatAIResponse(customWelcomeMessage);
             }
@@ -2503,7 +2535,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             const loadingId = addLoadingMessage();
 
             try {
-                // Call backend API for AI chat
+                // Call backend API for AI chat with master data context
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -2511,7 +2543,8 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                     },
                     body: JSON.stringify({
                         message: message,
-                        conversationHistory: conversationHistory
+                        conversationHistory: conversationHistory,
+                        masterData: currentMasterData || ''
                     })
                 });
 

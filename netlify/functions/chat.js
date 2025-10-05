@@ -33,7 +33,7 @@ app.post('/api/chat', async (req, res) => {
     console.log('POST /api/chat called');
     console.log('Request body:', req.body);
     
-    const { message, conversationHistory } = req.body;
+    const { message, conversationHistory, masterData: requestMasterData } = req.body;
     
     if (!message) {
         console.log('Error: Message is required');
@@ -41,19 +41,23 @@ app.post('/api/chat', async (req, res) => {
     }
 
     try {
-        // Load master data
-        const masterData = loadMasterData();
-        let contextData = masterData.content || 'Tidak ada data tersimpan';
+        // Use master data from request if available, otherwise use stored data
+        const storedMasterData = loadMasterData();
+        let contextData = requestMasterData || storedMasterData.content || 'Tidak ada data tersimpan';
+        
+        console.log('Master data from request:', requestMasterData ? 'Available' : 'Not available');
+        console.log('Master data from storage:', storedMasterData.content ? 'Available' : 'Not available');
+        console.log('Context data length:', contextData.length);
         
         // Prepare conversation history
         const messages = [
             {
                 role: "system",
-                content: `Anda adalah AI Assistant untuk Supply Chain Management. Gunakan data berikut sebagai referensi untuk menjawab pertanyaan:
+                content: `Anda adalah AI Assistant untuk DT Internal Masterdata di Unilever Indonesia. Gunakan data berikut sebagai referensi untuk menjawab pertanyaan:
 
 ${contextData}
 
-Jawablah dengan bahasa Indonesia yang ramah dan profesional. Fokus pada aspek supply chain, distribusi, logistik, dan operasional. Gunakan data yang tersedia untuk memberikan jawaban yang spesifik dan akurat.`
+Jawablah dengan bahasa Indonesia yang ramah dan profesional. Fokus pada data internal, master data, dan informasi yang tersimpan dalam sistem DT Internal. Gunakan data yang tersedia untuk memberikan jawaban yang spesifik dan akurat berdasarkan master data yang telah diset. Jika user bertanya tentang data apa saja yang tersedia, jelaskan berdasarkan master data yang ada di sistem.`
             },
             ...conversationHistory,
             {
