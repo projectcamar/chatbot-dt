@@ -960,32 +960,19 @@
             }
         }
 
-        // Format AI response text
+        // Format AI response text - SIMPLIFIED
         function formatAIResponse(text) {
-            // First, handle markdown tables before other formatting
+            // Handle markdown tables first
             text = formatMarkdownTables(text);
             
-            // Convert markdown bold (**text**) to HTML bold with better styling
+            // Convert markdown bold (**text**) to HTML bold
             text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // Convert section headers to h3 tags for better styling
-            text = text.replace(/(\d+\.\s+\*\*([^*]+)\*\*)/g, '<h3>$-</h3>');
-            
-            // Convert numbered lists (1. 2. 3.) to proper HTML lists
-            text = text.replace(/(\d+\.\s+[^\n]+(?:\n(?!(?:\d+\.|\n))[^\n]+)*)/g, (match) => {
-                const items = match.split(/\n(?=\d+\.)/);
-                const listItems = items.map(item => {
-                    const cleanItem = item.replace(/^\d+\.\s*/, '').trim();
-                    return `<li>${cleanItem}</li>`;
-                }).join('');
-                return `<ol>${listItems}</ol>`;
-            });
             
             // Convert line breaks to HTML breaks
             text = text.replace(/\n/g, '<br>');
             
-            // Convert multiple line breaks to paragraph breaks
-            text = text.replace(/(<br>\s*){2,}/g, '</p><p>');
+            // Clean up excessive line breaks (max 2 consecutive)
+            text = text.replace(/(<br>\s*){3,}/g, '<br><br>');
             
             // Wrap in paragraph tags
             text = `<p>${text}</p>`;
