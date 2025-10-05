@@ -813,7 +813,7 @@
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
                         <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!
-                        <br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page, setiap 2 menit, dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>
+                        <br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>
                     </div>
                 </div>
 
@@ -848,7 +848,7 @@
 
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
-                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync aktif: Data akan otomatis di-sync setiap 2 menit</p>
+                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync: Aktif saat tidak editing, disabled saat admin sedang edit</p>
                     
                     <div class="data-preview" id="dataPreview" style="margin-bottom: 20px; font-size: 0.8em; padding: 8px 12px; max-height: 80px;">
                         <strong>📊 Preview Data:</strong>
@@ -884,6 +884,7 @@
         let currentMasterData = '';
         let customWelcomeMessage = null;
         let lastMasterDataHash = null;
+        let isAdminEditing = false; // Flag to prevent sync during admin editing
 
         // Chat history management
         const CHAT_HISTORY_KEY = 'dt_chat_history';
@@ -1244,6 +1245,12 @@
         
         // Load master data from API - AUTO SYNC FOR ALL USERS
         function loadMasterData() {
+            // Skip sync if admin is currently editing to prevent conflicts
+            if (isAdminEditing) {
+                console.log('Skipping sync - admin is currently editing');
+                return;
+            }
+            
             // Show sync indicator
             const sessionInfo = document.getElementById('sessionInfo');
             const originalText = sessionInfo.textContent;
@@ -1507,6 +1514,9 @@
                 // Load master data from server
                 loadMasterData();
                 
+                // Set up admin editing detection
+                setupAdminEditingDetection();
+                
                 updateAdminStatus();
             } else {
                 alert('❌ Unlock code salah!');
@@ -1520,9 +1530,41 @@
             }
         }
 
+        // Set up admin editing detection
+        function setupAdminEditingDetection() {
+            const masterDataField = document.getElementById('masterData');
+            if (masterDataField) {
+                // Detect when admin starts editing
+                masterDataField.addEventListener('focus', function() {
+                    isAdminEditing = true;
+                    console.log('Admin started editing - sync disabled');
+                });
+                
+                // Detect when admin stops editing (after 2 seconds of inactivity)
+                let editingTimeout;
+                masterDataField.addEventListener('input', function() {
+                    isAdminEditing = true;
+                    clearTimeout(editingTimeout);
+                    editingTimeout = setTimeout(function() {
+                        isAdminEditing = false;
+                        console.log('Admin stopped editing - sync enabled');
+                    }, 2000);
+                });
+                
+                // Detect when admin leaves the field
+                masterDataField.addEventListener('blur', function() {
+                    setTimeout(function() {
+                        isAdminEditing = false;
+                        console.log('Admin left field - sync enabled');
+                    }, 1000);
+                });
+            }
+        }
+
         // Lock admin panel
         function logoutAdmin() {
             isAdminLoggedIn = false;
+            isAdminEditing = false; // Reset editing flag
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('adminCode').value = '';
@@ -2304,8 +2346,8 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             setInterval(updateSessionInfo, 60 * 1000);
             updateSessionInfo(); // Initial update
             
-            // Sync master data every 2 minutes to get latest updates
-            setInterval(loadMasterData, 2 * 60 * 1000); // Auto-sync every 2 minutes
+            // Auto-sync 2 menit dihapus untuk mencegah konflik dengan admin editing
+            // setInterval(loadMasterData, 2 * 60 * 1000); // Disabled to prevent admin conflicts
             
             // Sync data when user returns to the page/tab
             document.addEventListener('visibilitychange', function() {
@@ -2382,6 +2424,11 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                     localStorage.setItem('supplyChainData', JSON.stringify(data));
                     
                     updateDataPreview();
+                    
+                    // Force sync after successful save
+                    isAdminEditing = false; // Reset editing flag
+                    loadMasterData();
+                    
                     alert('✅ Master data berhasil disimpan dan disinkronkan ke semua user!');
                 } else {
                     alert('❌ Gagal menyimpan data: ' + result.error);
