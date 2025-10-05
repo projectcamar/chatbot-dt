@@ -813,6 +813,7 @@
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
                         <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!
+                        <br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page, setiap 2 menit, dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>
                     </div>
                 </div>
 
@@ -847,6 +848,7 @@
 
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
+                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync aktif: Data akan otomatis di-sync setiap 2 menit</p>
                     
                     <div class="data-preview" id="dataPreview" style="margin-bottom: 20px; font-size: 0.8em; padding: 8px 12px; max-height: 80px;">
                         <strong>📊 Preview Data:</strong>
@@ -862,7 +864,7 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAdminModal()">Tutup</button>
                     <button class="btn btn-info" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;">🔍 RAG Status</button>
-                    <button class="btn btn-warning" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Load from Server</button>
+                    <button class="btn btn-warning" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Force Sync</button>
                 <button class="btn btn-primary" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan Data</button>
             </div>
         </div>
@@ -1217,6 +1219,9 @@
                 saveSession();
                 document.getElementById('passwordModal').style.display = 'none';
                 document.getElementById('userInput').focus();
+                
+                // Load master data from server immediately after successful login
+                loadMasterData();
             } else {
                 // Show detailed error with contact info
                 const errorMessage = `❌ Access code salah!\n\nJika Anda memerlukan akses, silakan hubungi:\n📞 Ugi: +62 852-4228-3643\n💬 WhatsApp: wa.me/+6285242283643`;
@@ -1231,15 +1236,22 @@
             }
         }
 
-        // Initialize data loading (simple approach)
+        // Initialize data loading (always sync on every page load/refresh)
         function initializeSocket() {
-            // Load master data saat page load
+            // Load master data setiap kali page load/refresh untuk semua user
             loadMasterData();
         }
         
-        // Load master data from API - PERMANENT DATA PROTECTION
+        // Load master data from API - AUTO SYNC FOR ALL USERS
         function loadMasterData() {
-            fetch('/api/master-data')
+            // Show sync indicator
+            const sessionInfo = document.getElementById('sessionInfo');
+            const originalText = sessionInfo.textContent;
+            sessionInfo.innerHTML = '<span class="loading"></span> Syncing master data...';
+            
+            // Add cache-busting parameter to ensure fresh data
+            const timestamp = new Date().getTime();
+            fetch(`/api/master-data?t=${timestamp}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1247,20 +1259,20 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Only update if current data is empty (protect existing data)
+                    // Always load from server to ensure all users have latest data
                     const serverData = data.content || '';
-                    const currentData = document.getElementById('masterData').value;
+                    currentMasterData = serverData;
                     
-                    if (!currentData || currentData.trim() === '') {
-                        // Only load from server if local data is empty
-                        currentMasterData = serverData;
-                        document.getElementById('masterData').value = currentMasterData;
-                        console.log('Loaded master data from server (local was empty)');
-                    } else {
-                        // Keep existing data, don't overwrite
-                        currentMasterData = currentData;
-                        console.log('Preserved existing master data (not overwriting)');
+                    // Update master data field if admin panel is open
+                    const masterDataField = document.getElementById('masterData');
+                    if (masterDataField) {
+                        masterDataField.value = currentMasterData;
                     }
+                    
+                    console.log('✅ Master data synced from server for all users');
+                    
+                    // Generate custom welcome message based on latest data
+                    generateCustomWelcomeMessage();
                     
                     updateDataPreview();
                     // Save to session
@@ -1268,26 +1280,42 @@
                     
                     // Show RAG status button for large data
                     if (currentMasterData && currentMasterData.length > 1000) {
-                        document.getElementById('ragStatusBtn').style.display = 'inline-block';
+                        const ragBtn = document.getElementById('ragStatusBtn');
+                        if (ragBtn) ragBtn.style.display = 'inline-block';
                     } else {
-                        document.getElementById('ragStatusBtn').style.display = 'none';
+                        const ragBtn = document.getElementById('ragStatusBtn');
+                        if (ragBtn) ragBtn.style.display = 'none';
                     }
                     
                     // Always show force load button for admin
                     if (isAdminLoggedIn) {
-                        document.getElementById('forceLoadBtn').style.display = 'inline-block';
+                        const forceBtn = document.getElementById('forceLoadBtn');
+                        if (forceBtn) forceBtn.style.display = 'inline-block';
                     }
+                    
+                    // Show sync success indicator
+                    sessionInfo.innerHTML = '✅ Data synced successfully';
+                    setTimeout(() => {
+                        sessionInfo.textContent = originalText;
+                    }, 2000);
                 })
                 .catch(error => {
                     console.error('Error loading master data:', error);
                     // Fallback to session data if API fails
                     if (currentMasterData) {
-                        document.getElementById('masterData').value = currentMasterData;
+                        const masterDataField = document.getElementById('masterData');
+                        if (masterDataField) masterDataField.value = currentMasterData;
                         updateDataPreview();
                     } else {
                         currentMasterData = '';
                         updateDataPreview();
                     }
+                    
+                    // Show sync error indicator
+                    sessionInfo.innerHTML = '❌ Sync failed - using cached data';
+                    setTimeout(() => {
+                        sessionInfo.textContent = originalText;
+                    }, 3000);
                 });
         }
 
@@ -2257,7 +2285,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                 // Load chat history
                 loadChatHistory();
                 
-                // Always load master data from server for all users
+                // Always load master data from server for all users (auto-sync)
                 loadMasterData();
                 
                 // Update admin status if logged in as admin
@@ -2277,7 +2305,34 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             updateSessionInfo(); // Initial update
             
             // Sync master data every 2 minutes to get latest updates
-            // setInterval(loadMasterData, 2 * 60 * 1000); // Disabled for permanent data
+            setInterval(loadMasterData, 2 * 60 * 1000); // Auto-sync every 2 minutes
+            
+            // Sync data when user returns to the page/tab
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('Page became visible - syncing data...');
+                    loadMasterData();
+                }
+            });
+            
+            // Sync data when page regains focus
+            window.addEventListener('focus', function() {
+                console.log('Window focused - syncing data...');
+                loadMasterData();
+            });
+            
+            // Sync data before page unload (when user is about to leave)
+            window.addEventListener('beforeunload', function() {
+                console.log('Page unloading - ensuring data is synced...');
+                // Force sync before leaving
+                loadMasterData();
+            });
+            
+            // Sync data on page reload
+            window.addEventListener('load', function() {
+                console.log('Page loaded - syncing data...');
+                loadMasterData();
+            });
             
             // Prevent double-tap zoom on buttons
             const buttons = document.querySelectorAll('.btn');
@@ -2492,6 +2547,8 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
         document.addEventListener('DOMContentLoaded', function() {
             initializeSocket();
             initializeData();
+            // Always load master data on every page load
+            loadMasterData();
         });
     </script>
 </body>
