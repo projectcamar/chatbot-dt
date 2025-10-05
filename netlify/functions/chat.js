@@ -45,19 +45,41 @@ app.post('/api/chat', async (req, res) => {
         const storedMasterData = loadMasterData();
         let contextData = requestMasterData || storedMasterData.content || 'Tidak ada data tersimpan';
         
+        // If no master data available, provide a helpful message
+        if (!contextData || contextData.trim() === '' || contextData === 'Tidak ada data tersimpan') {
+            contextData = 'Belum ada master data yang tersimpan. Silakan admin mengisi master data terlebih dahulu.';
+        }
+        
         console.log('Master data from request:', requestMasterData ? 'Available' : 'Not available');
         console.log('Master data from storage:', storedMasterData.content ? 'Available' : 'Not available');
         console.log('Context data length:', contextData.length);
+        console.log('Context data preview:', contextData.substring(0, 200) + '...');
         
         // Prepare conversation history
         const messages = [
             {
                 role: "system",
-                content: `Anda adalah AI Assistant untuk DT Internal Masterdata di Unilever Indonesia. Gunakan data berikut sebagai referensi untuk menjawab pertanyaan:
+                content: `Anda adalah AI Assistant untuk DT Internal Masterdata di Unilever Indonesia. 
 
+MASTER DATA YANG TERSEDIA:
 ${contextData}
 
-Jawablah dengan bahasa Indonesia yang ramah dan profesional. Fokus pada data internal, master data, dan informasi yang tersimpan dalam sistem DT Internal. Gunakan data yang tersedia untuk memberikan jawaban yang spesifik dan akurat berdasarkan master data yang telah diset. Jika user bertanya tentang data apa saja yang tersedia, jelaskan berdasarkan master data yang ada di sistem.`
+INSTRUKSI PENTING:
+1. SELALU gunakan master data di atas sebagai referensi utama untuk menjawab pertanyaan
+2. Jika user bertanya "ada data apa saja di master data?" atau "data apa saja yang tersedia?", jelaskan secara spesifik berdasarkan master data yang ada di atas
+3. JANGAN memberikan jawaban generic tentang data produk, pelanggan, supplier, dll. jika tidak ada di master data
+4. Fokus pada data yang benar-benar ada di master data seperti M1, Monthly Review, ULIP CF-GT, dll.
+5. Jika ada data spesifik di master data, sebutkan dengan detail
+6. Gunakan bahasa Indonesia yang ramah dan profesional
+7. Jika tidak ada data yang relevan di master data, katakan "Data tersebut tidak tersedia dalam master data saat ini"
+8. PENTING: Analisis master data di atas dan sebutkan data yang benar-benar ada, bukan data generic
+9. Jika master data berisi "M1: Monthly Review", sebutkan itu sebagai data yang tersedia
+10. Jika master data berisi "ULIP CF-GT", sebutkan itu sebagai data yang tersedia
+
+CONTOH JAWABAN YANG BENAR:
+- Jika user tanya "data apa saja?", jawab berdasarkan data yang ada di master data (M1, Monthly Review, dll.)
+- Jika user tanya "data M1", jelaskan detail M1 yang ada di master data
+- JANGAN jawab dengan data generic yang tidak ada di master data`
             },
             ...conversationHistory,
             {
