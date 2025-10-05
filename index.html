@@ -848,7 +848,8 @@
 
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
-                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync: Aktif saat tidak editing, disabled saat admin sedang edit</p>
+                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync: Hanya saat login/refresh, disabled saat admin edit</p>
+                    <p style="margin: 0 0 12px 0; font-size: 0.7em; color: #666;">💡 Data tidak akan otomatis berubah saat Anda sedang edit</p>
                     
                     <div class="data-preview" id="dataPreview" style="margin-bottom: 20px; font-size: 0.8em; padding: 8px 12px; max-height: 80px;">
                         <strong>📊 Preview Data:</strong>
@@ -1221,7 +1222,7 @@
                 document.getElementById('passwordModal').style.display = 'none';
                 document.getElementById('userInput').focus();
                 
-                // Load master data from server immediately after successful login
+                // Load master data from server only after successful login
                 loadMasterData();
             } else {
                 // Show detailed error with contact info
@@ -1237,10 +1238,10 @@
             }
         }
 
-        // Initialize data loading (always sync on every page load/refresh)
+        // Initialize data loading (only sync on fresh page load)
         function initializeSocket() {
-            // Load master data setiap kali page load/refresh untuk semua user
-            loadMasterData();
+            // Load master data hanya saat fresh page load, tidak setiap kali
+            // loadMasterData(); // Moved to specific events only
         }
         
         // Load master data from API - AUTO SYNC FOR ALL USERS
@@ -1538,9 +1539,10 @@
                 masterDataField.addEventListener('focus', function() {
                     isAdminEditing = true;
                     console.log('Admin started editing - sync disabled');
+                    updateAdminEditingStatus();
                 });
                 
-                // Detect when admin stops editing (after 2 seconds of inactivity)
+                // Detect when admin stops editing (after 3 seconds of inactivity)
                 let editingTimeout;
                 masterDataField.addEventListener('input', function() {
                     isAdminEditing = true;
@@ -1548,7 +1550,8 @@
                     editingTimeout = setTimeout(function() {
                         isAdminEditing = false;
                         console.log('Admin stopped editing - sync enabled');
-                    }, 2000);
+                        updateAdminEditingStatus();
+                    }, 3000); // Increased to 3 seconds
                 });
                 
                 // Detect when admin leaves the field
@@ -1556,8 +1559,23 @@
                     setTimeout(function() {
                         isAdminEditing = false;
                         console.log('Admin left field - sync enabled');
+                        updateAdminEditingStatus();
                     }, 1000);
                 });
+            }
+        }
+        
+        // Update admin editing status display
+        function updateAdminEditingStatus() {
+            const statusElement = document.querySelector('#adminPanel p:nth-child(2)');
+            if (statusElement) {
+                if (isAdminEditing) {
+                    statusElement.innerHTML = '<span class="status-indicator status-offline"></span>Auto-sync: <strong>DISABLED</strong> - Admin sedang edit';
+                    statusElement.style.color = '#dc3545';
+                } else {
+                    statusElement.innerHTML = '<span class="status-indicator status-online"></span>Auto-sync: Hanya saat login/refresh, disabled saat admin edit';
+                    statusElement.style.color = '#28a745';
+                }
             }
         }
 
@@ -2327,7 +2345,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                 // Load chat history
                 loadChatHistory();
                 
-                // Always load master data from server for all users (auto-sync)
+                // Load master data from server only on fresh page load
                 loadMasterData();
                 
                 // Update admin status if logged in as admin
@@ -2349,32 +2367,8 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             // Auto-sync 2 menit dihapus untuk mencegah konflik dengan admin editing
             // setInterval(loadMasterData, 2 * 60 * 1000); // Disabled to prevent admin conflicts
             
-            // Sync data when user returns to the page/tab
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    console.log('Page became visible - syncing data...');
-                    loadMasterData();
-                }
-            });
-            
-            // Sync data when page regains focus
-            window.addEventListener('focus', function() {
-                console.log('Window focused - syncing data...');
-                loadMasterData();
-            });
-            
-            // Sync data before page unload (when user is about to leave)
-            window.addEventListener('beforeunload', function() {
-                console.log('Page unloading - ensuring data is synced...');
-                // Force sync before leaving
-                loadMasterData();
-            });
-            
-            // Sync data on page reload
-            window.addEventListener('load', function() {
-                console.log('Page loaded - syncing data...');
-                loadMasterData();
-            });
+            // Event listeners dihapus untuk mencegah gangguan saat admin edit
+            // Hanya sync saat page load/refresh dan login saja
             
             // Prevent double-tap zoom on buttons
             const buttons = document.querySelectorAll('.btn');
@@ -2594,8 +2588,8 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
         document.addEventListener('DOMContentLoaded', function() {
             initializeSocket();
             initializeData();
-            // Always load master data on every page load
-            loadMasterData();
+            // Load master data only on initial page load (not on every DOMContentLoaded)
+            // loadMasterData(); // Moved to session check to prevent conflicts
         });
     </script>
 </body>
