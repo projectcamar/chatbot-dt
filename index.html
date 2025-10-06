@@ -1105,7 +1105,7 @@
     <div id="confirmModal" class="modal">
         <div class="modal-content confirm-modal">
             <div class="modal-header">
-                <h2 id="confirmTitle">">Konfirmasi</h2>
+                <h2 id="confirmTitle"><i class="fas fa-exclamation-triangle"></i> Konfirmasi</h2>
             </div>
             <div class="modal-body">
                 <p id="confirmMessage">Apakah Anda yakin?</p>
@@ -1206,7 +1206,7 @@
                     // Add welcome message first
                     const welcomeDiv = document.createElement('div');
                     welcomeDiv.className = 'message ai-message';
-                    welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;">Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                    welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;"><i class="fas fa-sync-alt"></i> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
                     chatContainer.appendChild(welcomeDiv);
                     
                     // Load saved messages (excluding welcome messages)
@@ -1221,7 +1221,7 @@
                             if (msg.className.includes('ai-message')) {
                                 const copyButton = document.createElement('button');
                                 copyButton.className = 'copy-button';
-                                copyButton.innerHTML = 'Copy';
+                                copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
                                 copyButton.onclick = () => copyAIMessage(messageDiv);
                                 messageDiv.appendChild(copyButton);
                             }
@@ -1246,13 +1246,13 @@
                 
                 const welcomeDiv = document.createElement('div');
                 welcomeDiv.className = 'message ai-message';
-                welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;"> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;"><i class="fas fa-sync-alt"></i> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
                 chatContainer.appendChild(welcomeDiv);
                 
                 // Clear conversation history for AI
                 conversationHistory = [];
                 
-                alert('Riwayat chat berhasil dihapus!');
+                alert('<i class="fas fa-check"></i> Riwayat chat berhasil dihapus!');
             }
             });
         }
@@ -1548,7 +1548,7 @@
         }
 
         // Custom confirm function to replace browser confirm()
-        function customConfirm(message, title = 'Konfirmasi') {
+        function customConfirm(message, title = '<i class="fas fa-exclamation-triangle"></i> Konfirmasi') {
             return new Promise((resolve) => {
                 showConfirmModal(title, message, (result) => {
                     resolve(result);
@@ -1596,7 +1596,7 @@
                         masterDataField.value = currentMasterData;
                     }
                     
-                    console.log('Master data synced from server for all users');
+                    console.log('<i class="fas fa-check"></i> Master data synced from server for all users');
                     
                     // Generate custom welcome message based on latest data
                     generateCustomWelcomeMessage();
@@ -1621,7 +1621,7 @@
                     }
                     
                     // Show sync success indicator
-                    sessionInfo.innerHTML = 'Data synced successfully';
+                    sessionInfo.innerHTML = '<i class="fas fa-check"></i> Data synced successfully';
                     setTimeout(() => {
                         sessionInfo.textContent = originalText;
                     }, 2000);
@@ -1639,7 +1639,7 @@
                     }
                     
                     // Show sync error indicator
-                    sessionInfo.innerHTML = 'Sync failed - using cached data';
+                    sessionInfo.innerHTML = '<i class="fas fa-times"></i> Sync failed - using cached data';
                     setTimeout(() => {
                         sessionInfo.textContent = originalText;
                     }, 3000);
@@ -1706,7 +1706,7 @@
 
         // Force load from server (overwrite local data)
         async function forceLoadFromServer() {
-            const result = await customConfirm('<i class="fas fa-exclamation-triangle"></i> Ini akan mengganti data master yang ada dengan data dari server. Lanjutkan?', 'Force Sync');
+            const result = await customConfirm('<i class="fas fa-exclamation-triangle"></i> Ini akan mengganti data master yang ada dengan data dari server. Lanjutkan?', '<i class="fas fa-sync-alt"></i> Force Sync');
             if (result) {
                 try {
                     const response = await fetch('/api/master-data');
