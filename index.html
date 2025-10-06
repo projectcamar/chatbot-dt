@@ -7,6 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>UNVR DT AIMasterdata</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -91,6 +93,11 @@
             word-wrap: break-word;
             font-size: 0.9em;
             line-height: 1.4;
+            max-width: fit-content;
+            width: auto;
+            display: inline-block;
+            word-break: break-word;
+            hyphens: auto;
         }
 
         .user-message {
@@ -101,13 +108,15 @@
             max-width: 60%;
             width: fit-content;
             min-width: 60px;
+            word-break: break-word;
+            hyphens: auto;
         }
 
         .ai-message {
             background: #f1f3f4;
             color: #123062;
             border: 1px solid #e9ecef;
-            max-width: 85%;
+            max-width: 80%;
             width: fit-content;
             min-width: 60px;
         }
@@ -115,6 +124,8 @@
         .ai-message p {
             margin: 0 0 8px 0;
             line-height: 1.5;
+            word-break: break-word;
+            hyphens: auto;
         }
 
         .ai-message p:last-child {
@@ -479,6 +490,73 @@
             min-width: 60px;
         }
 
+        /* Custom Confirmation Modal */
+        .confirm-modal {
+            max-width: 400px;
+            width: 90%;
+            margin: 15% auto;
+        }
+
+        .confirm-modal .modal-header {
+            background: #ff6b6b;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            padding: 16px 20px;
+            margin: 0;
+        }
+
+        .confirm-modal .modal-header h2 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .confirm-modal .modal-body {
+            padding: 20px;
+            text-align: center;
+            background: white;
+        }
+
+        .confirm-modal .modal-body p {
+            margin: 0;
+            font-size: 1em;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .confirm-modal .modal-footer {
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .confirm-modal .btn {
+            min-width: 100px;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .confirm-modal .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .confirm-modal .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .confirm-modal .btn-primary {
+            background: #dc3545;
+            color: white;
+        }
+
+        .confirm-modal .btn-primary:hover {
+            background: #c82333;
+        }
+
         .hidden {
             display: none;
         }
@@ -590,6 +668,9 @@
                 font-size: 0.85em;
                 padding: 10px 14px;
                 margin-bottom: 12px;
+                max-width: fit-content;
+                width: auto;
+                display: inline-block;
             }
 
             .user-message {
@@ -727,6 +808,40 @@
             #adminPanel #previewContent {
                 font-size: 0.7em;
             }
+
+            /* Custom Confirmation Modal Mobile */
+            .confirm-modal {
+                max-width: 350px;
+                width: 95%;
+                margin: 20% auto;
+            }
+
+            .confirm-modal .modal-header {
+                padding: 14px 16px;
+            }
+
+            .confirm-modal .modal-header h2 {
+                font-size: 1em;
+            }
+
+            .confirm-modal .modal-body {
+                padding: 16px;
+            }
+
+            .confirm-modal .modal-body p {
+                font-size: 0.9em;
+            }
+
+            .confirm-modal .modal-footer {
+                padding: 14px 16px;
+                gap: 10px;
+            }
+
+            .confirm-modal .btn {
+                min-width: 80px;
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
         }
 
         /* Small Mobile (iPhone SE, etc.) */
@@ -778,6 +893,9 @@
             .message {
                 font-size: 0.8em;
                 padding: 8px 12px;
+                max-width: fit-content;
+                width: auto;
+                display: inline-block;
             }
 
             .user-message {
@@ -939,8 +1057,8 @@
                     <button class="btn btn-primary" onclick="checkPassword()" style="width: 100%;">Enter</button>
                     <div style="text-align: center; margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.8em; color: #666;">
                         <strong>Need Access?</strong><br>
-                        📞 Contact Ugi: +62 852-4228-3643<br>
-                        💬 <a href="https://wa.me/+6285242283643" target="_blank" style="color: #0066CB;">WhatsApp</a>
+                        <i class="fas fa-phone"></i> Contact Ugi: +62 852-4228-3643<br>
+                        <i class="fab fa-whatsapp"></i> <a href="https://wa.me/+6285242283643" target="_blank" style="color: #0066CB;">WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -950,7 +1068,7 @@
             <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px;">
                 <img src="assets/unilever-blue-transparent-withtextunderlogo.png" alt="Unilever" style="height: 40px; width: auto;">
                 <div>
-                    <h1 style="margin: 0; font-size: 1.6em;">🤖 DT Internal Masterdata</h1>
+                    <h1 style="margin: 0; font-size: 1.6em;"><i class="fas fa-robot"></i> DT Internal Masterdata</h1>
                     <p style="margin: 4px 0 0 0; font-size: 0.85em;">AI-powered data management untuk internal team</p>
                 </div>
             </div>
@@ -966,17 +1084,33 @@
                 <div class="chat-container" id="chatContainer">
                     <div class="message ai-message">
                         <strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!
-                        <br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>
+                        <br><br><small style="color: #28a745; font-weight: bold;"><i class="fas fa-sync-alt"></i> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <input type="text" id="userInput" placeholder="Tanyakan tentang data internal..." onkeypress="handleKeyPress(event)">
                     <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
-                    <button class="btn btn-secondary" onclick="clearChatHistory()" style="padding: 12px; font-size: 0.8em;" title="Hapus riwayat chat">🗑️</button>
+                    <button class="btn btn-secondary" onclick="clearChatHistory()" style="padding: 12px; font-size: 0.8em;" title="Hapus riwayat chat"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h2 id="confirmTitle"><i class="fas fa-exclamation-triangle"></i> Konfirmasi</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Apakah Anda yakin?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal(false)">Batal</button>
+                <button class="btn btn-primary" onclick="closeConfirmModal(true)">Ya, Lanjutkan</button>
+            </div>
         </div>
     </div>
 
@@ -986,7 +1120,7 @@
                 <div class="modal-header">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <img src="assets/Unilever_logo-onlytext.png" alt="Unilever" style="height: 24px; width: auto;">
-                        <h3 style="margin: 0;">⚙️ Admin Panel</h3>
+                        <h3 style="margin: 0;"><i class="fas fa-cog"></i> Admin Panel</h3>
                     </div>
                     <span class="close" onclick="closeAdminModal()">&times;</span>
                 </div>
@@ -996,10 +1130,10 @@
                         <label for="adminCode">Unlock Code:</label>
                         <input type="password" id="adminCode" placeholder="Masukkan unlock code" onkeypress="handleUnlockKeyPress(event)">
                     </div>
-                    <button class="btn btn-primary" onclick="unlockAdmin()" style="width: 100%;">🔓 Unlock Admin</button>
+                    <button class="btn btn-primary" onclick="unlockAdmin()" style="width: 100%;"><i class="fas fa-unlock"></i> Unlock Admin</button>
 
                     <div class="data-preview" id="dataPreview" style="margin-top: 15px; font-size: 0.8em; padding: 8px 12px; max-height: 80px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                        <strong>📊 Preview Data:</strong>
+                        <strong><i class="fas fa-chart-bar"></i> Preview Data:</strong>
                         <div id="previewContent" style="margin-top: 4px; font-size: 0.75em; line-height: 1.3;">Belum ada data tersimpan</div>
                     </div>
                     </div>
@@ -1007,10 +1141,10 @@
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
                     <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #28a745;"><span class="status-indicator status-online"></span>Auto-sync: Hanya saat login/refresh, disabled saat admin edit</p>
-                    <p style="margin: 0 0 12px 0; font-size: 0.7em; color: #666;">💡 Data tidak akan otomatis berubah saat Anda sedang edit</p>
+                    <p style="margin: 0 0 12px 0; font-size: 0.7em; color: #666;"><i class="fas fa-lightbulb"></i> Data tidak akan otomatis berubah saat Anda sedang edit</p>
                     
                     <div class="form-group">
-                        <label for="masterData">📋 DT Internal Master Data:</label>
+                        <label for="masterData"><i class="fas fa-clipboard-list"></i> DT Internal Master Data:</label>
                         <textarea id="masterData" placeholder="Paste semua data internal di sini (Ctrl+V):&#10;&#10;Contoh format:&#10;=== INFORMASI PERUSAHAAN ===&#10;Nama: PT Unilever Indonesia&#10;Divisi: DT Internal&#10;Lokasi: Jakarta, Bandung, Surabaya...&#10;&#10;=== DATA OPERASIONAL ===&#10;Proses internal: 1. Data collection...&#10;Sistem: SAP, Oracle, Custom tools...&#10;&#10;=== FAQ & PANDUAN INTERNAL ===&#10;Q: Bagaimana cara akses data X?&#10;A: Login ke portal internal...&#10;&#10;=== INFORMASI KONTAK INTERNAL ===&#10;Email: dt.internal@unilever.com&#10;Ext: 1234&#10;Jam kerja: Senin-Jumat 08:00-17:00"></textarea>
                     </div>
                 </div>
@@ -1018,9 +1152,9 @@
             <div class="modal-footer">
                 <div class="button-group">
                     <button class="btn btn-secondary btn-compact" onclick="closeAdminModal()">Tutup</button>
-                    <button class="btn btn-info btn-compact" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;">🔍 RAG</button>
-                    <button class="btn btn-warning btn-compact" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;">🔄 Sync</button>
-                    <button class="btn btn-primary btn-compact" onclick="saveData()" id="saveBtn" style="display: none;">💾 Simpan</button>
+                    <button class="btn btn-info btn-compact" onclick="showRAGStatus()" id="ragStatusBtn" style="display: none;"><i class="fas fa-search"></i> RAG</button>
+                    <button class="btn btn-warning btn-compact" onclick="forceLoadFromServer()" id="forceLoadBtn" style="display: none;"><i class="fas fa-sync-alt"></i> Sync</button>
+                    <button class="btn btn-primary btn-compact" onclick="saveData()" id="saveBtn" style="display: none;"><i class="fas fa-save"></i> Simpan</button>
                 </div>
             </div>
         </div>
@@ -1069,7 +1203,7 @@
                     // Add welcome message first
                     const welcomeDiv = document.createElement('div');
                     welcomeDiv.className = 'message ai-message';
-                    welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                    welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;"><i class="fas fa-sync-alt"></i> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
                     chatContainer.appendChild(welcomeDiv);
                     
                     // Load saved messages (excluding welcome messages)
@@ -1084,7 +1218,7 @@
                             if (msg.className.includes('ai-message')) {
                                 const copyButton = document.createElement('button');
                                 copyButton.className = 'copy-button';
-                                copyButton.textContent = '📋 Copy';
+                                copyButton.textContent = '<i class="fas fa-copy"></i> Copy';
                                 copyButton.onclick = () => copyAIMessage(messageDiv);
                                 messageDiv.appendChild(copyButton);
                             }
@@ -1099,7 +1233,8 @@
         }
 
         function clearChatHistory() {
-            if (confirm('Apakah Anda yakin ingin menghapus semua riwayat chat?')) {
+            customConfirm('Apakah Anda yakin ingin menghapus semua riwayat chat?', '<i class="fas fa-trash"></i> Hapus Riwayat Chat').then((result) => {
+                if (result) {
                 localStorage.removeItem(CHAT_HISTORY_KEY);
                 const chatContainer = document.getElementById('chatContainer');
                 
@@ -1108,14 +1243,15 @@
                 
                 const welcomeDiv = document.createElement('div');
                 welcomeDiv.className = 'message ai-message';
-                welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;">🔄 Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
+                welcomeDiv.innerHTML = '<strong>AI Assistant:</strong> Halo! Saya adalah AI Assistant untuk DT Internal Masterdata. Saya siap membantu menjawab pertanyaan Anda tentang data internal, master data, dan informasi yang tersimpan dalam sistem. Silakan tanyakan apa saja!<br><br><small style="color: #28a745; font-weight: bold;"><i class="fas fa-sync-alt"></i> Data akan otomatis di-sync dari server setiap kali refresh page dan saat kembali ke tab untuk memastikan Anda selalu mendapat informasi terbaru.</small>';
                 chatContainer.appendChild(welcomeDiv);
                 
                 // Clear conversation history for AI
                 conversationHistory = [];
                 
-                alert('✅ Riwayat chat berhasil dihapus!');
-            }
+                alert('<i class="fas fa-check"></i> Riwayat chat berhasil dihapus!');
+                }
+            });
         }
 
         // Format AI response text - SIMPLIFIED
@@ -1353,7 +1489,7 @@
                 isAccessGranted = false;
                 document.getElementById('passwordModal').style.display = 'block';
                 document.getElementById('accessPassword').value = '';
-                alert('⏰ Session expired! Please enter access code again.');
+                alert('<i class="fas fa-clock"></i> Session expired! Please enter access code again.');
             }
         }
 
@@ -1371,7 +1507,7 @@
                 loadMasterData();
             } else {
                 // Show detailed error with contact info
-                const errorMessage = `❌ Access code salah!\n\nJika Anda memerlukan akses, silakan hubungi:\n📞 Ugi: +62 852-4228-3643\n💬 WhatsApp: wa.me/+6285242283643`;
+                const errorMessage = `<i class="fas fa-times"></i> Access code salah!\n\nJika Anda memerlukan akses, silakan hubungi:\n<i class="fas fa-phone"></i> Ugi: +62 852-4228-3643\n<i class="fab fa-whatsapp"></i> WhatsApp: wa.me/+6285242283643`;
                 alert(errorMessage);
                 document.getElementById('accessPassword').value = '';
             }
@@ -1390,6 +1526,41 @@
         }
         
         // Load master data from API - AUTO SYNC FOR ALL USERS
+        // Custom Confirmation Modal Functions
+        let confirmCallback = null;
+
+        function showConfirmModal(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmModal').style.display = 'block';
+            confirmCallback = callback;
+        }
+
+        function closeConfirmModal(result) {
+            document.getElementById('confirmModal').style.display = 'none';
+            if (confirmCallback) {
+                confirmCallback(result);
+                confirmCallback = null;
+            }
+        }
+
+        // Custom confirm function to replace browser confirm()
+        function customConfirm(message, title = '<i class="fas fa-exclamation-triangle"></i> Konfirmasi') {
+            return new Promise((resolve) => {
+                showConfirmModal(title, message, (result) => {
+                    resolve(result);
+                });
+            });
+        }
+
+        // Close confirmation modal when clicking outside
+        window.onclick = function(event) {
+            const confirmModal = document.getElementById('confirmModal');
+            if (event.target === confirmModal) {
+                closeConfirmModal(false);
+            }
+        }
+
         function loadMasterData() {
             // Skip sync if admin is currently editing to prevent conflicts
             if (isAdminEditing) {
@@ -1422,7 +1593,7 @@
                         masterDataField.value = currentMasterData;
                     }
                     
-                    console.log('✅ Master data synced from server for all users');
+                    console.log('<i class="fas fa-check"></i> Master data synced from server for all users');
                     
                     // Generate custom welcome message based on latest data
                     generateCustomWelcomeMessage();
@@ -1447,7 +1618,7 @@
                     }
                     
                     // Show sync success indicator
-                    sessionInfo.innerHTML = '✅ Data synced successfully';
+                    sessionInfo.innerHTML = '<i class="fas fa-check"></i> Data synced successfully';
                     setTimeout(() => {
                         sessionInfo.textContent = originalText;
                     }, 2000);
@@ -1465,7 +1636,7 @@
                     }
                     
                     // Show sync error indicator
-                    sessionInfo.innerHTML = '❌ Sync failed - using cached data';
+                    sessionInfo.innerHTML = '<i class="fas fa-times"></i> Sync failed - using cached data';
                     setTimeout(() => {
                         sessionInfo.textContent = originalText;
                     }, 3000);
@@ -1503,7 +1674,7 @@
         async function showRAGStatus() {
             const masterData = document.getElementById('masterData').value;
             if (!masterData.trim()) {
-                showNotification('❌ Tidak ada data untuk diproses', 'error');
+                showNotification('<i class="fas fa-times"></i> Tidak ada data untuk diproses', 'error');
                 return;
             }
             
@@ -1511,28 +1682,29 @@
                 // Test RAG search with a sample query
                 const ragResult = await searchRAG('data', 3);
                 if (ragResult) {
-                    const status = `🔍 RAG Status:\n` +
-                        `📊 Total Chunks: ${ragResult.totalChunks}\n` +
-                        `🎯 Search Results: ${ragResult.resultsCount}\n` +
-                        `📝 Query: "${ragResult.query}"\n\n` +
-                        `📋 Sample Chunks:\n` +
+                    const status = `<i class="fas fa-search"></i> RAG Status:\n` +
+                        `<i class="fas fa-chart-bar"></i> Total Chunks: ${ragResult.totalChunks}\n` +
+                        `<i class="fas fa-bullseye"></i> Search Results: ${ragResult.resultsCount}\n` +
+                        `<i class="fas fa-edit"></i> Query: "${ragResult.query}"\n\n` +
+                        `<i class="fas fa-clipboard-list"></i> Sample Chunks:\n` +
                         ragResult.chunks.map((chunk, index) => 
                             `${index + 1}. ${chunk.content.substring(0, 100)}...`
                         ).join('\n\n');
                     
                     alert(status);
                 } else {
-                    showNotification('❌ Gagal memproses RAG status', 'error');
+                    showNotification('<i class="fas fa-times"></i> Gagal memproses RAG status', 'error');
                 }
             } catch (error) {
                 console.error('Error showing RAG status:', error);
-                showNotification('❌ Error dalam RAG status', 'error');
+                showNotification('<i class="fas fa-times"></i> Error dalam RAG status', 'error');
             }
         }
 
         // Force load from server (overwrite local data)
         async function forceLoadFromServer() {
-            if (confirm('⚠️ Ini akan mengganti data master yang ada dengan data dari server. Lanjutkan?')) {
+            const result = await customConfirm('<i class="fas fa-exclamation-triangle"></i> Ini akan mengganti data master yang ada dengan data dari server. Lanjutkan?', '<i class="fas fa-sync-alt"></i> Force Sync');
+            if (result) {
                 try {
                     const response = await fetch('/api/master-data');
                     if (!response.ok) {
@@ -1549,10 +1721,10 @@
                     // Generate new custom welcome message
                     await generateCustomWelcomeMessage();
                     
-                    showNotification('✅ Data berhasil dimuat dari server', 'success');
+                    showNotification('<i class="fas fa-check"></i> Data berhasil dimuat dari server', 'success');
                 } catch (error) {
                     console.error('Error force loading from server:', error);
-                    showNotification('❌ Gagal memuat data dari server', 'error');
+                    showNotification('<i class="fas fa-times"></i> Gagal memuat data dari server', 'error');
                 }
             }
         }
@@ -1633,7 +1805,7 @@
             if (!loadSession()) {
                 isAccessGranted = false;
                 document.getElementById('passwordModal').style.display = 'block';
-                alert('⏰ Session expired! Please enter access code again.');
+                alert('<i class="fas fa-clock"></i> Session expired! Please enter access code again.');
                 return;
             }
             
@@ -1666,7 +1838,7 @@
                 
                 updateAdminStatus();
             } else {
-                alert('❌ Unlock code salah!');
+                alert('<i class="fas fa-times"></i> Unlock code salah!');
             }
         }
 
@@ -1775,7 +1947,7 @@
             try {
                 // Disable button and show loading
                 pdfButton.disabled = true;
-                pdfButton.textContent = '🤖 AI Processing...';
+                pdfButton.textContent = '<i class="fas fa-robot"></i> AI Processing...';
                 
                 // AI-powered content cleaning and formatting
                 const aiProcessedContent = await processContentWithAI(originalMessage);
@@ -2569,13 +2741,13 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                     isAdminEditing = false; // Reset editing flag
                     loadMasterData();
                     
-                    alert('✅ Master data berhasil disimpan dan disinkronkan ke semua user!');
+                    alert('<i class="fas fa-check"></i> Master data berhasil disimpan dan disinkronkan ke semua user!');
                 } else {
-                    alert('❌ Gagal menyimpan data: ' + result.error);
+                    alert('<i class="fas fa-times"></i> Gagal menyimpan data: ' + result.error);
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                alert('❌ Gagal menyimpan data. Periksa koneksi server.');
+                alert('<i class="fas fa-times"></i> Gagal menyimpan data. Periksa koneksi server.');
             }
         }
 
@@ -2584,7 +2756,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             let preview = '';
             
             if (currentMasterData) {
-                preview += `📋 Master Data: ${currentMasterData.substring(0, 200)}...<br>`;
+                preview += `<i class="fas fa-clipboard-list"></i> Master Data: ${currentMasterData.substring(0, 200)}...<br>`;
                 preview += `<br><small>Status: ${isAdminLoggedIn ? 'Admin Mode' : 'Visitor Mode'}</small>`;
             } else {
                 preview = 'Belum ada data tersimpan';
@@ -2606,12 +2778,12 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             if (!loadSession()) {
                 isAccessGranted = false;
                 document.getElementById('passwordModal').style.display = 'block';
-                alert('⏰ Session expired! Please enter access code again.');
+                alert('<i class="fas fa-clock"></i> Session expired! Please enter access code again.');
                 return;
             }
             
             if (!isAccessGranted) {
-                alert('❌ Please enter access code first!');
+                alert('<i class="fas fa-times"></i> Please enter access code first!');
                 return;
             }
             
@@ -2687,7 +2859,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                 // Add copy button for AI messages
                 const copyButton = document.createElement('button');
                 copyButton.className = 'copy-button';
-                copyButton.textContent = '📋 Copy';
+                copyButton.textContent = '<i class="fas fa-copy"></i> Copy';
                 copyButton.onclick = () => copyAIMessage(messageDiv);
                 messageDiv.appendChild(copyButton);
                 
