@@ -106,8 +106,8 @@ CONTOH JAWABAN YANG BENAR:
                 temperature: 0,
                 top_p: 1,
                 presence_penalty: 0,
-                frequency_penalty: 0
-                stream:true
+                frequency_penalty: 0,
+                stream: true
               })
         });
         
