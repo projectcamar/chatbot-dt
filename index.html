@@ -1094,7 +1094,7 @@
                 <div class="input-group">
                     <input type="text" id="userInput" placeholder="Tanyakan tentang data internal..." onkeypress="handleKeyPress(event)">
                     <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
-                    <button class="btn btn-secondary" onclick="clearChatHistory()" style="padding: 12px; font-size: 0.8em;" title="Hapus riwayat chat"></button>
+                    <button class="btn btn-secondary" onclick="clearChatHistory()" style="padding: 12px; font-size: 0.8em;" title="Hapus riwayat chat"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
 
@@ -1621,7 +1621,7 @@
                     }
                     
                     // Show sync success indicator
-                    sessionInfo.innerHTML = 'Data synced successfully';
+                    sessionInfo.innerHTML = '<i class="fas fa-check"></i> Data synced successfully';
                     setTimeout(() => {
                         sessionInfo.textContent = originalText;
                     }, 2000);
