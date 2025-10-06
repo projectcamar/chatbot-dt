@@ -69,6 +69,7 @@
             max-width: 600px;
             margin: 0 auto;
             width: 100%;
+            height: 100%;
         }
 
         .chat-container {
@@ -78,7 +79,7 @@
             padding: 20px;
             margin-bottom: 20px;
             overflow-y: auto;
-            max-height: 500px;
+            max-height: calc(100vh - 200px); /* Dynamic height based on viewport */
             background: #fafafa;
             padding-bottom: 100px; /* Space for floating input */
         }
@@ -573,13 +574,16 @@
 
             .chat-section {
                 max-width: 100%;
+                height: calc(100vh - 140px); /* Full height minus header */
+                flex: 1;
             }
 
             .chat-container {
                 padding: 16px;
-                max-height: 400px;
+                max-height: calc(100vh - 180px); /* Dynamic height for mobile */
                 border-radius: 8px;
                 padding-bottom: 80px; /* Space for floating input on mobile */
+                margin-bottom: 0; /* Remove bottom margin */
             }
 
             .message {
@@ -757,11 +761,18 @@
                 padding-bottom: 0;
                 margin-bottom: 0;
             }
+            
+            .chat-section {
+                max-width: 100%;
+                height: calc(100vh - 120px); /* Full height minus header for small mobile */
+                flex: 1;
+            }
 
             .chat-container {
                 padding: 12px;
-                max-height: 350px;
+                max-height: calc(100vh - 160px); /* Dynamic height for small mobile */
                 padding-bottom: 70px; /* Space for floating input on small mobile */
+                margin-bottom: 0; /* Remove bottom margin */
             }
 
             .message {
@@ -849,9 +860,16 @@
                 padding-bottom: 0;
             }
             
+            .chat-section {
+                max-width: 100%;
+                height: calc(100vh - 100px); /* Full height minus header for landscape */
+                flex: 1;
+            }
+            
             .chat-container {
-                max-height: 250px;
+                max-height: calc(100vh - 120px); /* Dynamic height for landscape */
                 padding-bottom: 60px; /* Space for floating input in landscape */
+                margin-bottom: 0; /* Remove bottom margin */
             }
 
             .input-group {
