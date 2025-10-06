@@ -530,6 +530,12 @@
                 max-width: 100%;
                 margin: 0;
                 min-height: 100vh;
+                padding-bottom: 0;
+            }
+            
+            body {
+                margin-bottom: 0;
+                padding-bottom: 0;
             }
 
             .header {
@@ -561,6 +567,8 @@
 
             .main-content {
                 padding: 16px;
+                padding-bottom: 0;
+                margin-bottom: 0;
             }
 
             .chat-section {
@@ -595,13 +603,16 @@
             .input-group {
                 flex-direction: row;
                 gap: 8px;
-                position: sticky;
+                position: fixed;
                 bottom: 0;
+                left: 0;
+                right: 0;
                 padding: 12px 16px;
                 background: white;
                 border-top: 1px solid #e9ecef;
                 box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
                 z-index: 100;
+                margin: 0;
             }
 
             .input-group input {
@@ -716,6 +727,15 @@
 
         /* Small Mobile (iPhone SE, etc.) */
         @media screen and (max-width: 480px) {
+            .container {
+                padding-bottom: 0;
+            }
+            
+            body {
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+            
             .header {
                 padding: 12px;
             }
@@ -734,6 +754,8 @@
 
             .main-content {
                 padding: 12px;
+                padding-bottom: 0;
+                margin-bottom: 0;
             }
 
             .chat-container {
@@ -761,12 +783,15 @@
 
             .input-group {
                 padding: 10px 12px;
-                position: sticky;
+                position: fixed;
                 bottom: 0;
+                left: 0;
+                right: 0;
                 background: white;
                 border-top: 1px solid #e9ecef;
                 box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
                 z-index: 100;
+                margin: 0;
             }
 
             .input-group input {
@@ -815,6 +840,15 @@
 
         /* Landscape Mobile */
         @media screen and (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding-bottom: 0;
+            }
+            
+            body {
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
+            
             .chat-container {
                 max-height: 250px;
                 padding-bottom: 60px; /* Space for floating input in landscape */
@@ -822,12 +856,15 @@
 
             .input-group {
                 padding: 8px 16px;
-                position: sticky;
+                position: fixed;
                 bottom: 0;
+                left: 0;
+                right: 0;
                 background: white;
                 border-top: 1px solid #e9ecef;
                 box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
                 z-index: 100;
+                margin: 0;
             }
 
             .modal-content {
