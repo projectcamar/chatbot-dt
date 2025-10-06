@@ -100,15 +100,11 @@ CONTOH JAWABAN YANG BENAR:
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'gpt-3.5-turbo',
                 messages: messages,
-                max_tokens: 300,
-                temperature: 0,
-                top_p: 1,
-                presence_penalty: 0,
-                frequency_penalty: 0,
-                stream: true
-              })
+                max_tokens: 500,
+                temperature: 0.7
+            })
         });
         
         console.log('OpenAI response status:', response.status);

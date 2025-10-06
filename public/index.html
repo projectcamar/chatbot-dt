@@ -17,7 +17,20 @@
             min-height: 100vh;
             padding: 20px;
         }
-
+          #notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  #notification.hidden {
+    display: none;
+  }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -252,7 +265,7 @@
                     <button class="btn btn-primary" onclick="sendMessage()">Kirim</button>
                 </div>
             </div>
-
+            <div id="notification" class="hidden"></div>
             <div class="admin-section">
                 <div id="loginForm" class="login-form">
                     <h3>🔓 Admin Unlock</h3>
@@ -481,17 +494,25 @@
         }
 
         // Add message to chat container
-        function addMessageToChat(message, sender) {
-            const chatContainer = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            const senderName = sender === 'user' ? 'Anda' : 'AI Assistant';
-            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
-            
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+function addMessageToChat(message, sender) {
+  const chatContainer = document.getElementById('chatContainer');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}-message`;
+
+  const senderName = sender === 'user' ? 'Anda' : 'AI Assistant';
+  messageDiv.innerHTML = `<strong>${senderName}:</strong> ${formatLinks(message)}`;
+
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function formatLinks(text) {
+  const urlRegex = /(https?:\/\/[^\s]+|[^\s]+\.com[^\s]*)/g;
+  return text.replace(urlRegex, (url) => {
+    const href = url.startsWith('http') ? url : 'https://' + url;
+    return `<a href="${href}" target="_blank" style="font-weight: bold; text-decoration: underline;">${url}</a>`;
+  });
+}
 
         // Add loading message
         function addLoadingMessage() {
@@ -521,6 +542,42 @@
             initializeSocket();
             initializeData();
         });
+        function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.remove('hidden');
+    setTimeout(() => {
+      notification.classList.add('hidden');
+    }, 3000);
+  }
+
+  // Replace alert calls with showNotification
+  function unlockAdmin() {
+    const unlockCode = document.getElementById('adminCode').value;
+    if (unlockCode === ADMIN_UNLOCK_CODE) {
+      isAdminLoggedIn = true;
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+      initializeData();
+    } else {
+      showNotification('❌ Unlock code salah!');
+    }
+  }
+
+  async function saveData() {
+    const masterDataContent = document.getElementById('masterData').value;
+    if (!masterDataContent.trim()) {
+      showNotification('Master data tidak boleh kosong!');
+      return;
+    }
+    // ... existing code ...
+    if (result.success) {
+      // ... existing code ...
+      showNotification('✅ Master data berhasil disimpan dan disinkronkan ke semua user!');
+    } else {
+      showNotification('❌ Gagal menyimpan data: ' + result.error);
+    }
+  }
     </script>
 </body>
 </html>
