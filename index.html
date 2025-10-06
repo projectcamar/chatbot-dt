@@ -110,6 +110,7 @@
             min-width: 60px;
             word-break: break-word;
             hyphens: auto;
+            display: inline-block;
         }
 
         .ai-message {
@@ -332,6 +333,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
         }
 
         .btn-primary {
@@ -1136,7 +1138,7 @@
                         <strong><i class="fas fa-chart-bar"></i> Preview Data:</strong>
                         <div id="previewContent" style="margin-top: 4px; font-size: 0.75em; line-height: 1.3;">Belum ada data tersimpan</div>
                     </div>
-                    </div>
+                </div>
 
                 <div id="adminPanel" class="hidden">
                     <p style="margin: 0 0 12px 0;"><span class="status-indicator status-online"></span>Terhubung sebagai: <strong>ugi</strong> <span style="color: #28a745; font-weight: bold;">(Admin Mode)</span></p>
@@ -1218,7 +1220,7 @@
                             if (msg.className.includes('ai-message')) {
                                 const copyButton = document.createElement('button');
                                 copyButton.className = 'copy-button';
-                                copyButton.textContent = '<i class="fas fa-copy"></i> Copy';
+                                copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy';
                                 copyButton.onclick = () => copyAIMessage(messageDiv);
                                 messageDiv.appendChild(copyButton);
                             }
@@ -1250,7 +1252,7 @@
                 conversationHistory = [];
                 
                 alert('<i class="fas fa-check"></i> Riwayat chat berhasil dihapus!');
-                }
+            }
             });
         }
 
@@ -2849,7 +2851,7 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
             
-            const senderName = sender === 'user' ? 'Anda' : 'AI Assistant';
+            const senderName = sender === 'user' ? '' : 'AI Assistant';
             
             // Format AI response if it's from AI
             if (sender === 'ai') {
@@ -2866,11 +2868,11 @@ Return ONLY the JSON response with chart suggestions for each key point.`;
                 // Add PDF button for AI messages
                 const pdfButton = document.createElement('button');
                 pdfButton.className = 'pdf-button';
-                pdfButton.textContent = '📄 PDF';
+                pdfButton.innerHTML = '<i class="fas fa-file-pdf"></i> PDF';
                 pdfButton.onclick = () => generatePDF(messageDiv, message);
                 messageDiv.appendChild(pdfButton);
             } else {
-                messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+                messageDiv.innerHTML = message;
             }
             
             chatContainer.appendChild(messageDiv);
